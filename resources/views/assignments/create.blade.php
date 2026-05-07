@@ -12,7 +12,7 @@
                 Buat Tugas Penilaian
             </h3>
             
-            <form action="{{ route('assignments.store') }}" method="POST" class="space-y-6">
+            <form action="{{ route('assignments.store') }}" method="POST" class="space-y-6" enctype="multipart/form-data">
                 @csrf
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -43,6 +43,26 @@
                         <label for="description" class="block text-sm font-bold text-gray-700 mb-2">Instruksi Tugas</label>
                         <textarea name="description" id="description" rows="5" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-colors" placeholder="Tulis instruksi lengkap penugasan di sini..." required>{{ old('description') }}</textarea>
                         @error('description')<p class="mt-1 text-sm text-red-600 font-medium">{{ $message }}</p>@enderror
+                    </div>
+
+                    <div>
+                        <label for="attachment" class="block text-sm font-bold text-gray-700 mb-2">Lampiran Soal / File Tambahan (Opsional)</label>
+                        <input type="file" name="attachment" id="attachment" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                        @error('attachment')<p class="mt-1 text-sm text-red-600 font-medium">{{ $message }}</p>@enderror
+                    </div>
+
+                    <div>
+                        <label for="max_score" class="block text-sm font-bold text-gray-700 mb-2">Nilai Maksimal</label>
+                        <input type="number" name="max_score" id="max_score" value="{{ old('max_score', 100) }}" min="1" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-colors" required>
+                        @error('max_score')<p class="mt-1 text-sm text-red-600 font-medium">{{ $message }}</p>@enderror
+                    </div>
+                    
+                    <div class="md:col-span-2 pt-2">
+                        <label class="relative flex items-center cursor-pointer">
+                            <input type="checkbox" name="is_published" value="1" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                            <span class="ml-3 text-sm font-bold text-gray-900">Publish ke Siswa (Jangan jadikan draf)</span>
+                        </label>
                     </div>
                 </div>
 

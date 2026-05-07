@@ -23,21 +23,62 @@ class StudentAssignmentController extends Controller
 
     public function submit(Request $request, Assignment $assignment)
     {
-        if (Carbon::now()->isAfter($assignment->deadline)) {
-            return back()->with('error', 'Maaf, batas waktu pengumpulan tugas ini telah berakhir.');
-        }
-
         $request->validate([
-            'file' => 'required|file|max:10240', // max 10MB
+            'text_content' => 'nullable|string',
+            'files.*' => 'nullable|file|mimes:pdf,doc,docx,zip,jpeg,png,jpg|max:10240', // max 10MB per file
         ]);
 
-        $path = $request->file('file')->store('submissions', 'public');
+        if (!$request->filled('text_content') && !$request->hasFile('files')) {
+            return back()->with('error', 'Silakan isi teks jawaban atau unggah file.');
+        }
 
-        $submission = Submission::updateOrCreate(
+        $now = Carbon::now();
+        $isLate = $now->isAfter($assignment->deadline);
+
+        // Upload multiple files if present
+        $attachments = [];
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                $path = $file->store('submissions', 'public');
+                $attachments[] = [
+                    'name' => $file->getClientOriginalName(),
+                    'path' => $path
+                ];
+            }
+        }
+
+        $submission = Submission::where('assignment_id', $assignment->id)
+            ->where('user_id', auth()->id())
+            ->first();
+
+        // If existing submission has files, we can either append or replace. For simplicity, let's append.
+        if ($submission && $submission->attachments) {
+            $attachments = array_merge($submission->attachments, $attachments);
+        }
+
+        $submissionRecord = Submission::updateOrCreate(
             ['assignment_id' => $assignment->id, 'user_id' => auth()->id()],
-            ['file_path' => $path]
+            [
+                'text_content' => $request->text_content ?? ($submission->text_content ?? null),
+                'attachments' => $attachments,
+                'status' => 'submitted',
+                'is_late' => $isLate,
+                // store the first file path to the legacy column if it exists to maintain compatibility
+                'file_path' => count($attachments) > 0 ? $attachments[0]['path'] : null,
+            ]
         );
 
-        return back()->with('success', 'Tugas berhasil dikumpulkan!');
+        // Notify teacher
+        $assignment->load('course.classes.teacher');
+        $teachers = collect();
+        foreach ($assignment->course->classes as $class) {
+            if ($class->teacher) {
+                $teachers->push($class->teacher);
+            }
+        }
+        \Illuminate\Support\Facades\Notification::send($teachers->unique('id'), new \App\Notifications\SubmissionReceivedNotification($submissionRecord));
+
+        $message = $isLate ? 'Tugas berhasil dikumpulkan (Terlambat).' : 'Tugas berhasil dikumpulkan!';
+        return back()->with('success', $message);
     }
 }

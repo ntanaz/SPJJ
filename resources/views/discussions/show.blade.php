@@ -27,7 +27,20 @@
         @endif
 
         <!-- Card Topik Diskusi -->
-        <div class="bg-indigo-600 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden mb-8">
+        <div class="bg-indigo-600 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden mb-8 {{ $discussion->is_pinned ? 'border-4 border-yellow-400' : '' }}">
+            @if($discussion->is_pinned)
+                <div class="absolute top-0 right-0 bg-yellow-400 text-yellow-900 font-bold px-4 py-1 rounded-bl-xl shadow text-sm flex items-center z-20">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                    Disematkan
+                </div>
+            @endif
+            @if($discussion->is_locked)
+                <div class="absolute top-0 right-32 bg-red-500 text-white font-bold px-4 py-1 rounded-b-xl shadow text-sm flex items-center z-20">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    Dikunci
+                </div>
+            @endif
+
             <div class="absolute -right-10 -top-10 w-48 h-48 rounded-full bg-white opacity-10"></div>
             <div class="absolute -bottom-10 right-20 w-32 h-32 rounded-full bg-white opacity-5"></div>
             
@@ -49,9 +62,26 @@
                             <h3 class="text-3xl font-black mb-1 text-white leading-tight">{{ $discussion->title }}</h3>
                             <p class="text-indigo-200 text-sm font-medium">{{ $discussion->course->name }} &bull; {{ $discussion->created_at->diffForHumans() }}</p>
                         </div>
+                        
+                        @role('guru|teacher|admin')
+                        <div class="flex items-center gap-2 mt-2 sm:mt-0">
+                            <form action="{{ route('discussions.pin', $discussion) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="px-3 py-1 bg-white/20 hover:bg-white/40 rounded-lg text-sm font-bold transition-colors">
+                                    {{ $discussion->is_pinned ? 'Unpin' : 'Pin Topik' }}
+                                </button>
+                            </form>
+                            <form action="{{ route('discussions.lock', $discussion) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="px-3 py-1 bg-red-500/80 hover:bg-red-500 rounded-lg text-sm font-bold transition-colors">
+                                    {{ $discussion->is_locked ? 'Buka Kunci' : 'Kunci Topik' }}
+                                </button>
+                            </form>
+                        </div>
+                        @endrole
                     </div>
                     
-                    <div class="prose prose-indigo prose-invert max-w-none font-medium leading-relaxed bg-black/10 p-5 rounded-2xl shadow-inner border border-white/5">
+                    <div class="prose prose-indigo prose-invert max-w-none font-medium leading-relaxed bg-black/10 p-5 rounded-2xl shadow-inner border border-white/5 mt-4">
                         {!! nl2br(e($discussion->content)) !!}
                     </div>
                 </div>
@@ -69,7 +99,7 @@
             @forelse($discussion->replies as $reply)
                 <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 {{ $reply->user->id === auth()->id() ? 'border-l-4 border-l-indigo-500' : '' }} flex flex-col sm:flex-row gap-6">
                     <div class="flex-shrink-0 flex sm:flex-col items-center gap-3">
-                        <div class="h-12 w-12 rounded-xl {{ $reply->user->hasRole('guru|admin') ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-600' }} flex items-center justify-center font-bold text-lg">
+                        <div class="h-12 w-12 rounded-xl {{ $reply->user->hasRole(['guru', 'teacher', 'admin']) ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-600' }} flex items-center justify-center font-bold text-lg">
                             {{ substr($reply->user->name, 0, 1) }}
                         </div>
                         
@@ -88,7 +118,7 @@
                                 <p class="text-xs text-gray-500 font-medium">{{ $reply->created_at->translatedFormat('d F Y, H:i') }} ({{ $reply->created_at->diffForHumans() }})</p>
                             </div>
                             
-                            @if(auth()->id() === $reply->user_id || auth()->user()->hasRole('guru|admin'))
+                            @if(auth()->id() === $reply->user_id || auth()->user()->hasRole(['guru', 'teacher', 'admin']))
                                 <form action="{{ route('discussion_replies.destroy', $reply) }}" method="POST" onsubmit="return confirm('Hapus balasan diskusi ini?');" class="inline">
                                     @csrf
                                     @method('DELETE')
@@ -102,8 +132,8 @@
                         <div class="text-gray-700 leading-relaxed font-medium whitespace-pre-line">{{ $reply->content }}</div>
                         
                         <!-- Area Penilaian (Khusus Guru/Admin & Bukan Milik Guru tsb) -->
-                        @role('guru|admin')
-                            @if(!$reply->user->hasRole('guru|admin'))
+                        @role('guru|teacher|admin')
+                            @if(!$reply->user->hasRole(['guru', 'teacher', 'admin']))
                             <div class="pt-4 mt-2 border-t border-gray-100">
                                 <form action="{{ route('discussion_replies.grade', $reply) }}" method="POST" class="flex flex-col sm:flex-row items-center gap-3">
                                     @csrf
@@ -131,6 +161,7 @@
         </div>
 
         <!-- Form Tulis Balasan -->
+        @if(!$discussion->is_locked)
         <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
             <h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
@@ -150,5 +181,14 @@
                 </div>
             </form>
         </div>
+        @else
+        <div class="bg-red-50 rounded-3xl p-6 text-center shadow-sm border border-red-100">
+            <div class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-500 mb-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            </div>
+            <h4 class="font-bold text-red-800 text-lg">Topik Ini Telah Dikunci</h4>
+            <p class="text-red-600 mt-1">Anda tidak dapat lagi mengirimkan balasan pada diskusi ini.</p>
+        </div>
+        @endif
     </div>
 </x-app-layout>

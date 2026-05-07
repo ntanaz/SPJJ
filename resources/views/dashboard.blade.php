@@ -11,6 +11,35 @@
     </x-slot>
 
     <div class="py-6">
+        @if(isset($announcements) && $announcements->count() > 0)
+        <!-- Announcements -->
+        <div class="mb-8 space-y-4">
+            @foreach($announcements as $announcement)
+            <div class="bg-white rounded-2xl border border-{{ $announcement->urgency_level == 'urgent' ? 'red' : ($announcement->urgency_level == 'important' ? 'yellow' : 'blue') }}-100 shadow-sm p-4 flex items-start space-x-4">
+                <div class="flex-shrink-0 mt-1">
+                    @if($announcement->urgency_level == 'urgent')
+                        <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                        </div>
+                    @elseif($announcement->urgency_level == 'important')
+                        <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                    @else
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
+                        </div>
+                    @endif
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold text-gray-900">{{ $announcement->title }}</h4>
+                    <p class="text-sm text-gray-600 mt-1">{{ $announcement->content }}</p>
+                    <div class="text-xs text-gray-400 mt-2 font-medium">{{ $announcement->created_at->diffForHumans() }}</div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+        @endif
         @role('admin')
         <!-- Admin Dashboard -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -91,16 +120,24 @@
         @role('siswa')
         <!-- Siswa Dashboard -->
         
-        <!-- Gamification Banner -->
+        <!-- Welcome Banner -->
         <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-fuchsia-500 rounded-3xl p-8 mb-8 text-white shadow-xl relative overflow-hidden">
             <div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-white opacity-5"></div>
             <div class="absolute bottom-0 left-0 -ml-16 -mb-16 w-48 h-48 rounded-full bg-white opacity-5"></div>
             
             <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between">
                 <div>
-                    <span class="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold uppercase tracking-wider mb-3">Target Hari Ini</span>
-                    <h3 class="text-3xl font-extrabold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-100">Selesaikan Bab 1: AI</h3>
-                    <p class="text-indigo-100 max-w-lg text-sm leading-relaxed">Dapatkan +50 XP dengan menyelesaikan kuis hari ini. Kumpulkan badge untuk masuk ke Top 3 Student!</p>
+                    <span class="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold uppercase tracking-wider mb-3">Progress Kelas Anda</span>
+                    <h3 class="text-3xl font-extrabold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-100">Lanjutkan Belajar Anda!</h3>
+                    <div class="mt-4 w-full max-w-md">
+                        <div class="flex justify-between items-center text-xs font-bold text-indigo-100 mb-1">
+                            <span>Progress Total</span>
+                            <span>{{ $progress ?? 0 }}%</span>
+                        </div>
+                        <div class="w-full bg-white/20 rounded-full h-2">
+                            <div class="bg-gradient-to-r from-green-300 to-emerald-400 h-2 rounded-full" style="width: {{ $progress ?? 0 }}%"></div>
+                        </div>
+                    </div>
                 </div>
                 <div class="mt-6 md:mt-0 flex flex-col items-center">
                     <div class="w-24 h-24 bg-gradient-to-br from-yellow-300 to-yellow-500 rounded-full flex items-center justify-center border-4 border-white/20 shadow-inner">
@@ -119,7 +156,7 @@
                 </div>
             </div>
             <div class="flex-1 w-full">
-                <h4 class="text-lg font-black text-gray-800 mb-1">Pengingat! Deadline Minggu Ini 🔥</h4>
+                <h4 class="text-lg font-black text-gray-800 mb-1">Pengingat! Tugas Mendekati Deadline 🔥</h4>
                 <p class="text-sm font-medium text-gray-600 mb-4">Ayo kumpulkan tugasmu sebelum waktunya habis.</p>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     @foreach($upcomingAssignments as $assignment)
@@ -134,7 +171,7 @@
                             </div>
                             <div class="text-right w-1/3 pl-2">
                                 <a href="{{ route('student.assignments.show', $assignment) }}" class="inline-block px-4 py-2 bg-pink-100 text-pink-700 hover:bg-pink-600 hover:text-white text-xs font-bold rounded-xl transition-colors shadow-sm whitespace-nowrap">
-                                    Lihat Tugas
+                                    Kerjakan
                                 </a>
                             </div>
                         </div>
@@ -145,98 +182,106 @@
         @endif
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Left Column: Courses -->
-            <div class="lg:col-span-2 space-y-6">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-xl font-bold text-gray-800">Mata Pelajaran Saya</h3>
-                    <a href="#" class="text-sm font-semibold text-indigo-600 hover:text-indigo-700">Lihat Semua</a>
-                </div>
+            <!-- Left Column: Tasks & Quizzes -->
+            <div class="lg:col-span-2 space-y-8">
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Course Card: AI -->
-                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow group cursor-pointer">
-                        <div class="flex items-center space-x-4 mb-4">
-                            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center border border-blue-100 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-gray-800 text-lg">Kecerdasan Artifisial</h4>
-                                <p class="text-xs font-semibold text-indigo-500">Guru Budi</p>
-                            </div>
-                        </div>
-                        <div class="w-full bg-gray-100 rounded-full h-2.5 mb-2 mt-6">
-                            <div class="bg-gradient-to-r from-blue-500 to-indigo-500 h-2.5 rounded-full" style="width: 45%"></div>
-                        </div>
-                        <div class="flex justify-between items-center text-xs text-gray-500 font-medium font-sans mt-2">
-                            <span>Progress: 45%</span>
-                            <span>Bab 2 dari 5</span>
-                        </div>
+                <!-- Active Quizzes -->
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                            <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            Kuis Aktif
+                        </h3>
                     </div>
+                    @if(isset($activeQuizzes) && $activeQuizzes->count() > 0)
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            @foreach($activeQuizzes as $quiz)
+                                <div class="bg-gradient-to-br from-amber-50 to-white rounded-2xl p-5 shadow-sm border border-amber-100 hover:shadow-md transition-shadow">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <div class="h-10 w-10 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        </div>
+                                        @if($quiz->deadline)
+                                        <span class="px-2 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-lg">{{ \Carbon\Carbon::parse($quiz->deadline)->format('d M') }}</span>
+                                        @endif
+                                    </div>
+                                    <h4 class="font-bold text-gray-800 mb-1">{{ $quiz->title }}</h4>
+                                    <p class="text-xs text-gray-500 mb-4">{{ $quiz->course->name }} &bull; {{ $quiz->time_limit_minutes ?? '-' }} Menit</p>
+                                    <a href="{{ route('student.quizzes.show', $quiz) }}" class="block w-full py-2 text-center bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition-colors text-sm shadow-sm">Mulai Kuis</a>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="bg-gray-50 rounded-2xl p-6 text-center border border-gray-100 border-dashed">
+                            <p class="text-gray-500 font-medium">Tidak ada kuis aktif saat ini.</p>
+                        </div>
+                    @endif
+                </div>
 
-                    <!-- Course Card: Coding -->
-                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow group cursor-pointer">
-                        <div class="flex items-center space-x-4 mb-4">
-                            <div class="w-12 h-12 bg-teal-50 text-teal-600 rounded-xl flex items-center justify-center border border-teal-100 group-hover:bg-teal-600 group-hover:text-white transition-colors">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
+                <!-- Recent Assignments -->
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                            <svg class="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                            Tugas Terbaru
+                        </h3>
+                        <a href="{{ route('student.courses') }}" class="text-sm font-semibold text-emerald-600 hover:text-emerald-700">Lihat Semua</a>
+                    </div>
+                    <div class="space-y-3">
+                        @forelse($recentAssignments ?? [] as $assignment)
+                            <a href="{{ route('student.assignments.show', $assignment) }}" class="flex items-center justify-between p-4 bg-white hover:bg-emerald-50 rounded-2xl border border-gray-100 hover:border-emerald-200 shadow-sm transition-all group">
+                                <div class="flex items-center gap-4">
+                                    <div class="h-10 w-10 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-800 group-hover:text-emerald-700 transition-colors">{{ $assignment->title }}</h4>
+                                        <p class="text-xs text-gray-500">{{ $assignment->course->name }}</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    @if($assignment->deadline)
+                                        <p class="text-xs font-bold text-gray-500 mb-1">Tenggat</p>
+                                        <p class="text-sm font-bold text-emerald-600">{{ \Carbon\Carbon::parse($assignment->deadline)->format('d M Y') }}</p>
+                                    @endif
+                                </div>
+                            </a>
+                        @empty
+                            <div class="bg-gray-50 rounded-2xl p-6 text-center border border-gray-100 border-dashed">
+                                <p class="text-gray-500 font-medium">Belum ada tugas baru.</p>
                             </div>
-                            <div>
-                                <h4 class="font-bold text-gray-800 text-lg">Koding (Python)</h4>
-                                <p class="text-xs font-semibold text-teal-500">Guru Budi</p>
-                            </div>
-                        </div>
-                        <div class="w-full bg-gray-100 rounded-full h-2.5 mb-2 mt-6">
-                            <div class="bg-gradient-to-r from-teal-400 to-emerald-500 h-2.5 rounded-full" style="width: 15%"></div>
-                        </div>
-                        <div class="flex justify-between items-center text-xs text-gray-500 font-medium font-sans mt-2">
-                            <span>Progress: 15%</span>
-                            <span>Bab 1 dari 10</span>
-                        </div>
+                        @endforelse
                     </div>
                 </div>
             </div>
 
-            <!-- Right Column: Top Students -->
+            <!-- Right Column: Schedule -->
             <div class="space-y-6">
-                <h3 class="text-xl font-bold text-gray-800">Top 3 Siswa Bulan Ini</h3>
+                <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                    <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    Jadwal Hari Ini
+                </h3>
                 
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="p-5 flex items-center justify-between border-b border-gray-50 bg-gradient-to-r from-yellow-50 to-amber-50">
-                        <div class="flex items-center space-x-3">
-                            <div class="text-2xl font-black text-amber-500">1</div>
-                            <img class="h-10 w-10 rounded-full border-2 border-white shadow-sm" src="https://ui-avatars.com/api/?name=Siswa Andi" alt="">
+                    @forelse($todaySchedule ?? [] as $schedule)
+                        <div class="p-4 border-b border-gray-50 hover:bg-blue-50 transition-colors flex items-start gap-4">
+                            <div class="flex flex-col items-center justify-center h-12 w-14 bg-blue-100 text-blue-700 rounded-xl">
+                                <span class="text-xs font-bold uppercase">{{ \Carbon\Carbon::parse($schedule->start_time)->format('H:i') }}</span>
+                            </div>
                             <div>
-                                <div class="text-sm font-bold text-gray-800">Siswa Andi (Kamu)</div>
-                                <div class="text-xs text-gray-500">10A</div>
+                                <h4 class="font-bold text-gray-800">{{ $schedule->title }}</h4>
+                                <p class="text-xs text-gray-500 mb-1">{{ $schedule->course->name }}</p>
+                                <a href="{{ route('student.attendances.show', $schedule) }}" class="text-xs font-bold text-blue-600 hover:text-blue-800">Isi Presensi &rarr;</a>
                             </div>
                         </div>
-                        <div class="text-right">
-                            <div class="text-sm font-black text-amber-600">850 XP</div>
-                        </div>
-                    </div>
-                    
-                    <div class="p-5 flex items-center justify-between border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                        <div class="flex items-center space-x-3">
-                            <div class="text-lg font-bold text-gray-400 w-4 text-center">2</div>
-                            <img class="h-10 w-10 rounded-full border-2 border-gray-200" src="https://ui-avatars.com/api/?name=Budi" alt="">
-                            <div>
-                                <div class="text-sm font-semibold text-gray-700">Budi Santoso</div>
-                                <div class="text-xs text-gray-500">10B</div>
+                    @empty
+                        <div class="p-6 text-center">
+                            <div class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-400 mb-3">
+                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                             </div>
+                            <p class="text-gray-500 font-medium text-sm">Tidak ada jadwal kelas hari ini. Waktunya istirahat atau mandiri!</p>
                         </div>
-                        <div class="text-right text-sm font-bold text-gray-600">720 XP</div>
-                    </div>
-
-                    <div class="p-5 flex items-center justify-between hover:bg-gray-50 transition-colors">
-                        <div class="flex items-center space-x-3">
-                            <div class="text-lg font-bold text-gray-400 w-4 text-center">3</div>
-                            <img class="h-10 w-10 rounded-full border-2 border-gray-200" src="https://ui-avatars.com/api/?name=Citra" alt="">
-                            <div>
-                                <div class="text-sm font-semibold text-gray-700">Citra Lestari</div>
-                                <div class="text-xs text-gray-500">10A</div>
-                            </div>
-                        </div>
-                        <div class="text-right text-sm font-bold text-gray-600">650 XP</div>
-                    </div>
+                    @endforelse
                 </div>
             </div>
         </div>

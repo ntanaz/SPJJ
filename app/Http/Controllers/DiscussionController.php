@@ -37,11 +37,29 @@ class DiscussionController extends Controller
     public function destroy(Discussion $discussion)
     {
         // Hanya yang nulis atau guru/admin yang bisa hapus
-        if (auth()->id() === $discussion->user_id || auth()->user()->hasRole('guru|admin')) {
+        if (auth()->id() === $discussion->user_id || auth()->user()->hasRole(['guru', 'teacher', 'admin'])) {
             $discussion->delete();
             return back()->with('success', 'Pesan diskusi berhasil dihapus.');
         }
 
+        return abort(403);
+    }
+
+    public function pin(Discussion $discussion)
+    {
+        if (auth()->user()->hasRole(['guru', 'teacher', 'admin'])) {
+            $discussion->update(['is_pinned' => !$discussion->is_pinned]);
+            return back()->with('success', 'Status sematkan (pin) diskusi diperbarui.');
+        }
+        return abort(403);
+    }
+
+    public function lock(Discussion $discussion)
+    {
+        if (auth()->user()->hasRole(['guru', 'teacher', 'admin'])) {
+            $discussion->update(['is_locked' => !$discussion->is_locked]);
+            return back()->with('success', 'Status kunci (lock) diskusi diperbarui.');
+        }
         return abort(403);
     }
 }

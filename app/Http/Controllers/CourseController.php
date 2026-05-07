@@ -32,9 +32,32 @@ class CourseController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
+            'code' => 'nullable|string|unique:courses,code',
+            'cover_image' => 'nullable|image|max:2048',
+            'banner_image' => 'nullable|image|max:2048',
+            'is_leaderboard_enabled' => 'boolean'
         ]);
 
-        Course::create($request->all());
+        $data = $request->all();
+        $data['is_leaderboard_enabled'] = $request->has('is_leaderboard_enabled');
+
+        if ($request->hasFile('cover_image')) {
+            $data['cover_image'] = $request->file('cover_image')->store('courses/covers', 'public');
+        }
+        if ($request->hasFile('banner_image')) {
+            $data['banner_image'] = $request->file('banner_image')->store('courses/banners', 'public');
+        }
+
+        $course = Course::create($data);
+
+        // If the user is a teacher, automatically create a class for them
+        if (auth()->user()->hasRole(['guru', 'teacher'])) {
+            \App\Models\CourseClass::create([
+                'name' => 'Kelas ' . $course->name,
+                'course_id' => $course->id,
+                'teacher_id' => auth()->id(),
+            ]);
+        }
 
         return redirect()->route('courses.index')->with('success', 'Mata Pelajaran berhasil ditambahkan.');
     }
@@ -63,9 +86,29 @@ class CourseController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
+            'code' => 'nullable|string|unique:courses,code,' . $course->id,
+            'cover_image' => 'nullable|image|max:2048',
+            'banner_image' => 'nullable|image|max:2048',
+            'is_leaderboard_enabled' => 'boolean'
         ]);
 
-        $course->update($request->all());
+        $data = $request->all();
+        $data['is_leaderboard_enabled'] = $request->has('is_leaderboard_enabled');
+
+        if ($request->hasFile('cover_image')) {
+            if ($course->cover_image && \Illuminate\Support\Facades\Storage::disk('public')->exists($course->cover_image)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($course->cover_image);
+            }
+            $data['cover_image'] = $request->file('cover_image')->store('courses/covers', 'public');
+        }
+        if ($request->hasFile('banner_image')) {
+            if ($course->banner_image && \Illuminate\Support\Facades\Storage::disk('public')->exists($course->banner_image)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($course->banner_image);
+            }
+            $data['banner_image'] = $request->file('banner_image')->store('courses/banners', 'public');
+        }
+
+        $course->update($data);
 
         return redirect()->route('courses.index')->with('success', 'Mata Pelajaran berhasil diperbarui.');
     }

@@ -19,13 +19,20 @@ class StudentQuizController extends Controller
 
     public function start(Quiz $quiz)
     {
+        // Check deadline
+        if ($quiz->deadline && \Carbon\Carbon::now()->isAfter($quiz->deadline)) {
+            return back()->with('error', 'Kuis sudah ditutup.');
+        }
+
         // Check if already attempted
         $attempt = $quiz->attempts()->where('user_id', auth()->id())->first();
         
         if (!$attempt) {
             $attempt = $quiz->attempts()->create([
                 'user_id' => auth()->id(),
-                'score' => 0
+                'score' => 0,
+                'status' => 'in_progress',
+                'started_at' => \Carbon\Carbon::now(),
             ]);
         }
 
@@ -38,7 +45,19 @@ class StudentQuizController extends Controller
             abort(403, 'Sesi kuis tidak valid.');
         }
 
+        if ($attempt->status === 'completed') {
+            return redirect()->route('student.quizzes.result', $attempt);
+        }
+
         $quiz = $attempt->quiz()->with('questions')->first();
+        
+        // Auto-submit if time is up
+        if ($quiz->time_limit_minutes && $attempt->started_at) {
+            $endTime = \Carbon\Carbon::parse($attempt->started_at)->addMinutes($quiz->time_limit_minutes);
+            if (\Carbon\Carbon::now()->isAfter($endTime)) {
+                return $this->processSubmission(new Request(), $attempt, true);
+            }
+        }
         
         return view('student.quizzes.attempt', compact('quiz', 'attempt'));
     }
@@ -48,7 +67,16 @@ class StudentQuizController extends Controller
         if ($attempt->user_id !== auth()->id()) {
             abort(403);
         }
+        
+        if ($attempt->status === 'completed') {
+            return redirect()->route('student.quizzes.result', $attempt);
+        }
 
+        return $this->processSubmission($request, $attempt);
+    }
+
+    private function processSubmission(Request $request, QuizAttempt $attempt, $isTimeout = false)
+    {
         $quiz = $attempt->quiz()->with('questions')->first();
         $answers = $request->input('answers', []);
         
@@ -78,16 +106,28 @@ class StudentQuizController extends Controller
         $finalScore = $maxScore > 0 ? round(($pointsEarned / $maxScore) * 100) : 0;
 
         $attempt->update([
-            'score' => $finalScore
+            'score' => $finalScore,
+            'status' => 'completed',
         ]);
 
-        // Award points to user if they haven't earned them for this quiz yet (simplified)
-        // For now, let's just add the pointsEarned to the user's total points.
+        // Award points to user
         $user = auth()->user();
         $user->increment('points', $pointsEarned);
 
-        return redirect()->route('student.quizzes.result', $attempt)
-            ->with('success', 'Kuis berhasil diselesaikan!');
+        // Pre-test Attendance Integration
+        $attendance = \App\Models\Attendance::where('pre_test_quiz_id', $quiz->id)
+            ->whereDate('date', \Carbon\Carbon::today())
+            ->first();
+            
+        if ($attendance) {
+            \App\Models\AttendanceRecord::updateOrCreate(
+                ['attendance_id' => $attendance->id, 'user_id' => $user->id],
+                ['status' => 'hadir']
+            );
+        }
+
+        $msg = $isTimeout ? 'Waktu habis! Kuis otomatis diselesaikan.' : 'Kuis berhasil diselesaikan!';
+        return redirect()->route('student.quizzes.result', $attempt)->with('success', $msg);
     }
 
     public function result(QuizAttempt $attempt)

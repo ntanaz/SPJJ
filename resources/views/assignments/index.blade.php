@@ -55,11 +55,14 @@
                                 <span class="text-sm font-bold bg-gray-100 px-3 py-1 rounded-lg text-gray-700 border border-gray-200">{{ $assignment->submissions_count }} Siswa</span>
                             </td>
                             <td class="px-6 py-4 text-right text-sm">
-                                <form action="{{ route('assignments.destroy', $assignment) }}" method="POST" class="inline-block" onsubmit="return confirm('Hapus tugas ini?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="px-3 py-1.5 bg-red-50 text-red-600 font-medium hover:bg-red-600 hover:text-white rounded-lg transition-colors shadow-sm">Hapus</button>
-                                </form>
+                                <div class="flex items-center justify-end space-x-2">
+                                    <a href="{{ route('teacher.assignments.submissions', $assignment->id) }}" class="px-3 py-1.5 bg-indigo-50 text-indigo-600 font-bold hover:bg-indigo-600 hover:text-white rounded-lg transition-colors shadow-sm">Cek Nilai</a>
+                                    <form action="{{ route('assignments.destroy', $assignment) }}" method="POST" class="inline-block" onsubmit="return confirm('Hapus tugas ini?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="px-3 py-1.5 bg-red-50 text-red-600 font-bold hover:bg-red-600 hover:text-white rounded-lg transition-colors shadow-sm">Hapus</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                         @empty

@@ -23,7 +23,7 @@
             </div>
         </div>
 
-        @role('guru|admin')
+        @role('guru|teacher|admin')
         <div class="mb-6 mt-4 flex justify-end">
             <button @click="showActivityModal = true" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-sm transition-transform active:scale-95 flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
@@ -203,7 +203,7 @@
                 </h3>
 
                 <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-                    @role('guru|admin')
+                    @role('guru|teacher|admin')
                     <!-- Form Tambah Diskusi -->
                     <form action="{{ route('discussions.store', $course) }}" method="POST" class="mb-8">
                         @csrf
@@ -232,7 +232,7 @@
                         @forelse($course->discussions as $discussion)
                             <div class="bg-gray-50 hover:bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-md hover:border-indigo-100 transition-all group flex justify-between items-center relative">
                                 <div class="flex items-start gap-4">
-                                    <div class="h-12 w-12 rounded-xl {{ $discussion->user->hasRole('guru|admin') ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-200 text-gray-600' }} flex items-center justify-center flex-shrink-0">
+                                    <div class="h-12 w-12 rounded-xl {{ $discussion->user->hasRole(['guru', 'teacher', 'admin']) ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-200 text-gray-600' }} flex items-center justify-center flex-shrink-0">
                                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" /></svg>
                                     </div>
                                     <div>
@@ -249,7 +249,7 @@
                                         Masuk Forum
                                     </a>
                                     
-                                    @role('guru|admin')
+                                    @role('guru|teacher|admin')
                                         <form action="{{ route('discussions.destroy', $discussion) }}" method="POST" onsubmit="return confirm('Hapus topik ini beserta semua balasan siswa?');" class="inline">
                                             @csrf
                                             @method('DELETE')

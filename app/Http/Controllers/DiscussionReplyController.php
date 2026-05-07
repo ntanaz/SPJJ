@@ -24,7 +24,7 @@ class DiscussionReplyController extends Controller
 
     public function grade(Request $request, DiscussionReply $reply)
     {
-        if (!auth()->user()->hasRole('guru|admin')) {
+        if (!auth()->user()->hasRole(['guru', 'teacher', 'admin'])) {
             abort(403);
         }
 
@@ -39,7 +39,7 @@ class DiscussionReplyController extends Controller
 
     public function destroy(DiscussionReply $reply)
     {
-        if (auth()->id() === $reply->user_id || auth()->user()->hasRole('guru|admin')) {
+        if (auth()->id() === $reply->user_id || auth()->user()->hasRole(['guru', 'teacher', 'admin'])) {
             $reply->delete();
             return back()->with('success', 'Balasan berhasil dihapus.');
         }

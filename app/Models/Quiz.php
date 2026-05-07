@@ -6,7 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class Quiz extends Model
 {
-    protected $fillable = ['course_id', 'title', 'description'];
+    protected $fillable = ['course_id', 'title', 'description', 'time_limit_minutes', 'deadline', 'show_results'];
+
+    protected function casts(): array
+    {
+        return [
+            'deadline' => 'datetime',
+            'show_results' => 'boolean',
+        ];
+    }
 
     public function course()
     {

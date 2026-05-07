@@ -6,7 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class QuizAttempt extends Model
 {
-    protected $fillable = ['quiz_id', 'user_id', 'score'];
+    protected $fillable = ['quiz_id', 'user_id', 'score', 'status', 'started_at'];
+
+    protected function casts(): array
+    {
+        return [
+            'started_at' => 'datetime',
+        ];
+    }
 
     public function quiz()
     {

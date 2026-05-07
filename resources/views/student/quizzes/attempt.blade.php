@@ -9,17 +9,70 @@
     </x-slot>
 
     <div class="py-12 max-w-4xl mx-auto sm:px-6 lg:px-8">
-        <!-- Progress Bar Visual -->
+        <!-- Progress Bar Visual & Timer -->
         <div class="mb-8" x-data="{ total: {{ $quiz->questions->count() }}, answered: 0 }" x-init="
             const inputs = document.querySelectorAll('input[type=radio]');
             const updateCount = () => { answered = document.querySelectorAll('input[type=radio]:checked').length; };
             inputs.forEach(el => el.addEventListener('change', updateCount));
             updateCount();
         ">
-            <div class="flex justify-between text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
-                <span>Progress Pengerjaan</span>
-                <span x-text="answered + ' / ' + total + ' Soal'"></span>
+            <div class="flex justify-between items-end mb-2">
+                <div class="text-xs font-bold text-gray-500 uppercase tracking-widest">
+                    <span>Progress Pengerjaan</span>
+                    <span x-text="answered + ' / ' + total + ' Soal'" class="ml-2"></span>
+                </div>
+                
+                @if($quiz->time_limit_minutes)
+                @php
+                    $endTime = \Carbon\Carbon::parse($attempt->started_at)->addMinutes($quiz->time_limit_minutes);
+                @endphp
+                <div class="bg-red-50 text-red-600 px-4 py-2 rounded-xl border border-red-100 font-bold flex items-center gap-2 shadow-sm" id="timer-container" data-endtime="{{ $endTime->timestamp * 1000 }}">
+                    <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <span id="countdown-timer">--:--:--</span>
+                </div>
+                
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const container = document.getElementById('timer-container');
+                        const timerDisplay = document.getElementById('countdown-timer');
+                        const endTime = parseInt(container.dataset.endtime);
+                        const form = document.getElementById('quiz-form');
+                        
+                        const updateTimer = setInterval(function() {
+                            const now = new Date().getTime();
+                            const distance = endTime - now;
+                            
+                            if (distance <= 0) {
+                                clearInterval(updateTimer);
+                                timerDisplay.innerHTML = "WAKTU HABIS";
+                                container.classList.replace('bg-red-50', 'bg-red-600');
+                                container.classList.replace('text-red-600', 'text-white');
+                                
+                                // Auto submit
+                                alert('Waktu pengerjaan telah habis. Jawaban akan dikumpulkan secara otomatis.');
+                                form.submit();
+                                return;
+                            }
+                            
+                            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                            
+                            timerDisplay.innerHTML = 
+                                (hours > 0 ? (hours < 10 ? "0" + hours : hours) + ":" : "") + 
+                                (minutes < 10 ? "0" + minutes : minutes) + ":" + 
+                                (seconds < 10 ? "0" + seconds : seconds);
+                                
+                            // Warning colors if less than 5 minutes
+                            if (distance < 5 * 60 * 1000) {
+                                container.classList.add('animate-bounce');
+                            }
+                        }, 1000);
+                    });
+                </script>
+                @endif
             </div>
+            
             <div class="w-full bg-gray-200 rounded-full h-3">
                 <div class="bg-gradient-to-r from-amber-400 to-orange-500 h-3 rounded-full transition-all duration-500" :style="'width: ' + ((answered/total)*100) + '%'"></div>
             </div>

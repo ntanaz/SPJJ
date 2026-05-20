@@ -629,4 +629,57 @@ class StudentMaterialController extends Controller
 
         return back()->with('success', '🎬 Video pembelajaran berhasil diunggah dan siap digunakan.');
     }
+
+    public function streamVideo(Material $material)
+    {
+        $path = $material->file_path;
+        if (!$path || !Storage::disk('public')->exists($path)) {
+            abort(404);
+        }
+
+        $fullPath = Storage::disk('public')->path($path);
+        $file = fopen($fullPath, 'rb');
+        $size = filesize($fullPath);
+        $length = $size;
+        $start = 0;
+        $end = $size - 1;
+
+        $headers = [
+            'Content-Type' => 'video/mp4',
+            'Accept-Ranges' => 'bytes',
+        ];
+
+        if (request()->headers->has('Range')) {
+            $range = request()->header('Range');
+            preg_match('/bytes=(\d+)-(\d+)?/', $range, $matches);
+            
+            $start = intval($matches[1]);
+            if (isset($matches[2]) && $matches[2] !== '') {
+                $end = intval($matches[2]);
+            }
+            
+            $length = $end - $start + 1;
+            fseek($file, $start);
+            
+            $headers['Content-Range'] = "bytes {$start}-{$end}/{$size}";
+            $status = 206;
+        } else {
+            $status = 200;
+        }
+
+        $headers['Content-Length'] = $length;
+
+        return response()->stream(function () use ($file, $length) {
+            $chunkSize = 8192;
+            $bytesSent = 0;
+            while (!feof($file) && $bytesSent < $length) {
+                $toRead = min($chunkSize, $length - $bytesSent);
+                $buffer = fread($file, $toRead);
+                echo $buffer;
+                flush();
+                $bytesSent += strlen($buffer);
+            }
+            fclose($file);
+        }, $status, $headers);
+    }
 }

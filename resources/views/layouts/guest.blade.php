@@ -19,7 +19,7 @@
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
             <div>
                 <a href="/">
-                    <x-application-logo class="w-[140px] h-[140px] object-contain mx-auto" />
+                    <x-application-logo class="w-[200px] h-[200px] object-contain mx-auto" />
                 </a>
             </div>
 

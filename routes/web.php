@@ -105,6 +105,8 @@ Route::middleware('auth')->group(function () {
         // Video Learning Student Routes
         Route::post('videos/{video}/log', [\App\Http\Controllers\VideoController::class, 'logProgress'])->name('student.videos.log');
         Route::post('videos/{video}/quiz-submit', [\App\Http\Controllers\VideoController::class, 'submitQuizAnswer'])->name('student.videos.quiz_submit');
+        Route::get('videos/{video}/stream', [\App\Http\Controllers\VideoController::class, 'stream'])->name('videos.stream');
+        Route::get('materials/{material}/stream', [\App\Http\Controllers\StudentMaterialController::class, 'streamVideo'])->name('materials.stream_video');
         
         // Discovery Learning Steps Routes
         Route::post('materials/{material}/step', [\App\Http\Controllers\StudentMaterialController::class, 'completeStep'])->name('student.materials.complete_step');

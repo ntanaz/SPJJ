@@ -127,11 +127,11 @@
                                 @php
                                     $videoUrl = null;
                                     if (!empty($video) && !empty($video->video_path)) {
-                                        $videoUrl = asset('storage/' . $video->video_path);
+                                        $videoUrl = route('videos.stream', $video->id);
                                     } elseif ($material) {
                                         $hasLocalVideo = $material->file_path && in_array($material->format ?? $material->type, ['video', 'video_post_class']);
                                         if ($hasLocalVideo) {
-                                            $videoUrl = asset('storage/' . $material->file_path);
+                                            $videoUrl = route('materials.stream_video', $material);
                                         }
                                     }
                                     

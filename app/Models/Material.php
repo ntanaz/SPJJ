@@ -64,15 +64,20 @@ class Material extends Model
                     \App\Models\LearningActivity::where('material_id', $material->id)->where('activity_type', 'mind_map')->delete();
                 }
                 
-                if ($material->file_path || $material->text_content) {
+                if (($material->file_path && !in_array($material->format ?? $material->type, ['video', 'video_post_class'])) || $material->text_content) {
                     $steps['material'] = 'Membaca Modul - ' . $material->title;
                 } else {
                     \App\Models\LearningActivity::where('material_id', $material->id)->where('activity_type', 'material')->delete();
                 }
                 
-                if ($material->youtube_url) {
+                $hasVideo = $material->youtube_url || ($material->file_path && in_array($material->format ?? $material->type, ['video', 'video_post_class']));
+                if ($hasVideo) {
                     $steps['video'] = 'Video Pembelajaran - ' . $material->title;
                 } else {
+                    $videoAct = \App\Models\LearningActivity::where('material_id', $material->id)->where('activity_type', 'video')->first();
+                    if ($videoAct && $videoAct->video_id) {
+                        \App\Models\Video::where('id', $videoAct->video_id)->delete();
+                    }
                     \App\Models\LearningActivity::where('material_id', $material->id)->where('activity_type', 'video')->delete();
                 }
                 
@@ -88,7 +93,7 @@ class Material extends Model
                 foreach ($steps as $type => $title) {
                     $maxOrder = \App\Models\LearningActivity::where('module_id', $material->module_id)->max('order_number') ?? 0;
                     
-                    \App\Models\LearningActivity::updateOrCreate(
+                    $activity = \App\Models\LearningActivity::updateOrCreate(
                         ['module_id' => $material->module_id, 'material_id' => $material->id, 'activity_type' => $type],
                         [
                             'title' => $title,
@@ -97,6 +102,28 @@ class Material extends Model
                             'is_required' => true,
                         ]
                     );
+
+                    if ($type === 'video') {
+                        $video = null;
+                        if ($activity->video_id) {
+                            $video = \App\Models\Video::find($activity->video_id);
+                        }
+                        $videoPath = $material->file_path ?? $material->youtube_url ?? '';
+                        if (!$video) {
+                            $video = \App\Models\Video::create([
+                                'module_id' => $material->module_id,
+                                'title' => $material->title,
+                                'video_path' => $videoPath,
+                                'duration' => 0,
+                            ]);
+                            $activity->update(['video_id' => $video->id]);
+                        } else {
+                            $video->update([
+                                'title' => $material->title,
+                                'video_path' => $videoPath,
+                            ]);
+                        }
+                    }
                 }
             }
         });

@@ -532,6 +532,7 @@ class StudentMaterialController extends Controller
             'questions.*.correct_answer'   => 'required|string',
         ]);
 
+        // 1. Save to legacy table for backwards compatibility
         $material->interactiveVideoQuestions()->delete();
 
         if ($request->has('questions')) {
@@ -546,7 +547,6 @@ class StudentMaterialController extends Controller
                 } elseif ($qType === 'true_false') {
                     $options = ['Benar', 'Salah'];
                 }
-                // short_answer: no options needed
 
                 $material->interactiveVideoQuestions()->create([
                     'timestamp'     => $q['timestamp'],
@@ -555,6 +555,87 @@ class StudentMaterialController extends Controller
                     'options'       => $options,
                     'correct_answer' => trim($q['correct_answer']),
                 ]);
+            }
+        }
+
+        // 2. Synchronize to the new Video and VideoQuiz tables
+        $activity = \App\Models\LearningActivity::where('material_id', $material->id)
+            ->where('activity_type', 'video')
+            ->first();
+
+        if (!$activity) {
+            $maxOrder = \App\Models\LearningActivity::where('module_id', $material->module_id)->max('order_number') ?? 0;
+            $activity = \App\Models\LearningActivity::create([
+                'module_id' => $material->module_id,
+                'material_id' => $material->id,
+                'activity_type' => 'video',
+                'title' => 'Video Pembelajaran - ' . $material->title,
+                'description' => 'Tonton video pembelajaran interaktif: ' . $material->title,
+                'order_number' => $maxOrder + 1,
+                'is_required' => true,
+            ]);
+        }
+
+        $video = null;
+        if ($activity->video_id) {
+            $video = \App\Models\Video::find($activity->video_id);
+        }
+
+        $videoPath = $material->file_path ?? $material->youtube_url ?? '';
+        if (!$video) {
+            $video = \App\Models\Video::create([
+                'module_id' => $material->module_id,
+                'title' => $material->title,
+                'video_path' => $videoPath,
+                'duration' => 0,
+            ]);
+            $activity->update(['video_id' => $video->id]);
+        } else {
+            $video->update([
+                'title' => $material->title,
+                'video_path' => $videoPath,
+            ]);
+        }
+
+        // Delete old quizzes to re-sync
+        $video->quizzes()->delete();
+
+        if ($request->has('questions')) {
+            foreach ($request->questions as $q) {
+                if (empty($q['question'])) continue;
+
+                $qType = $q['question_type'] ?? 'multiple_choice';
+                $feedback = $q['feedback'] ?? null;
+
+                $videoQuiz = $video->quizzes()->create([
+                    'timestamp_seconds' => $q['timestamp'],
+                    'question' => $q['question'],
+                    'question_type' => $qType,
+                    'feedback' => $feedback,
+                ]);
+
+                // Create options
+                $options = [];
+                if ($qType === 'multiple_choice') {
+                    $options = array_map('trim', explode(',', $q['options'] ?? ''));
+                } elseif ($qType === 'true_false') {
+                    $options = ['Benar', 'Salah'];
+                } elseif ($qType === 'short_answer') {
+                    $options = [trim($q['correct_answer'])];
+                }
+
+                foreach ($options as $optText) {
+                    if (empty($optText)) continue;
+                    $isCorrect = (trim(strtolower($optText)) === trim(strtolower($q['correct_answer'])));
+                    if ($qType === 'short_answer') {
+                        $isCorrect = true;
+                    }
+
+                    $videoQuiz->options()->create([
+                        'option_text' => $optText,
+                        'is_correct' => $isCorrect,
+                    ]);
+                }
             }
         }
 
@@ -626,6 +707,44 @@ class StudentMaterialController extends Controller
             'format'    => 'video',
             'type'      => 'video',
         ]);
+
+        // Automatically sync to Video model and LearningActivity
+        $activity = \App\Models\LearningActivity::where('material_id', $material->id)
+            ->where('activity_type', 'video')
+            ->first();
+
+        if (!$activity) {
+            $maxOrder = \App\Models\LearningActivity::where('module_id', $material->module_id)->max('order_number') ?? 0;
+            $activity = \App\Models\LearningActivity::create([
+                'module_id' => $material->module_id,
+                'material_id' => $material->id,
+                'activity_type' => 'video',
+                'title' => 'Video Pembelajaran - ' . $material->title,
+                'description' => 'Tonton video pembelajaran interaktif: ' . $material->title,
+                'order_number' => $maxOrder + 1,
+                'is_required' => true,
+            ]);
+        }
+
+        $video = null;
+        if ($activity->video_id) {
+            $video = \App\Models\Video::find($activity->video_id);
+        }
+
+        if (!$video) {
+            $video = \App\Models\Video::create([
+                'module_id' => $material->module_id,
+                'title' => $material->title,
+                'video_path' => $path,
+                'duration' => 0,
+            ]);
+            $activity->update(['video_id' => $video->id]);
+        } else {
+            $video->update([
+                'title' => $material->title,
+                'video_path' => $path,
+            ]);
+        }
 
         return back()->with('success', '🎬 Video pembelajaran berhasil diunggah dan siap digunakan.');
     }

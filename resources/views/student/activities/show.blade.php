@@ -145,9 +145,7 @@
 
                                 <div class="relative rounded-3xl overflow-hidden bg-black aspect-video shadow-md max-w-4xl mx-auto border border-gray-850">
                                     @if($videoUrl)
-                                        <video id="local-player" controls class="w-full h-full">
-                                            <source src="{{ $videoUrl }}" type="video/mp4">
-                                        </video>
+                                        <video id="local-player" controls class="w-full h-full" src="{{ $videoUrl }}"></video>
                                     @elseif($hasYoutube && $youtubeId)
                                         <div id="yt-player" class="w-full h-full min-h-[400px]"></div>
                                     @else
@@ -610,6 +608,10 @@
                             // Keep track of watched duration to block fast-forward
                             self.localVideo.addEventListener('timeupdate', () => {
                                 self.checkVideoTime(self.localVideo.currentTime);
+                                if ({{ $isCompleted ? 'true' : 'false' }}) {
+                                    self.supposedCurrentTime = self.localVideo.currentTime;
+                                    return;
+                                }
                                 if (!self.localVideo.seeking) {
                                     if (self.localVideo.currentTime > self.supposedCurrentTime) {
                                         if (self.localVideo.currentTime - self.supposedCurrentTime < 2) {
@@ -621,6 +623,7 @@
 
                             // Prevent forward skipping
                             self.localVideo.addEventListener('seeking', () => {
+                                if ({{ $isCompleted ? 'true' : 'false' }}) return;
                                 let delta = self.localVideo.currentTime - self.supposedCurrentTime;
                                 if (delta > 2) {
                                     self.localVideo.currentTime = self.supposedCurrentTime;
@@ -674,11 +677,15 @@
                                 const currentTime = self.player.getCurrentTime();
                                 
                                 // Prevent forward skipping on YouTube
-                                if (currentTime > self.supposedCurrentTime) {
-                                    if (currentTime - self.supposedCurrentTime > 2) {
-                                        self.player.seekTo(self.supposedCurrentTime, true);
-                                    } else {
-                                        self.supposedCurrentTime = currentTime;
+                                if ({{ $isCompleted ? 'true' : 'false' }}) {
+                                    self.supposedCurrentTime = currentTime;
+                                } else {
+                                    if (currentTime > self.supposedCurrentTime) {
+                                        if (currentTime - self.supposedCurrentTime > 2) {
+                                            self.player.seekTo(self.supposedCurrentTime, true);
+                                        } else {
+                                            self.supposedCurrentTime = currentTime;
+                                        }
                                     }
                                 }
 

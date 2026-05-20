@@ -42,9 +42,7 @@
 
                     @if($video->video_path)
                         <div class="relative rounded-2xl overflow-hidden bg-black aspect-video shadow-inner">
-                            <video id="preview-player" controls class="w-full h-full">
-                                <source src="{{ route('videos.stream', $video->id) }}" type="video/mp4">
-                            </video>
+                            <video id="preview-player" controls class="w-full h-full" src="{{ route('videos.stream', $video->id) }}"></video>
                         </div>
                         <div class="flex justify-between items-center bg-gray-50 p-4 rounded-2xl">
                             <div>

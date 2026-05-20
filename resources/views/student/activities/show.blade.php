@@ -564,7 +564,7 @@
         <script>
             function videoHandler() {
                 return {
-                    questions: @json($video ? $videoQuizzes->map(fn($q) => [
+                    questions: {!! json_encode($video ? $videoQuizzes->map(fn($q) => [
                         'id'             => $q->id,
                         'timestamp'      => $q->timestamp_seconds,
                         'question_type'  => $q->question_type ?? 'multiple_choice',
@@ -582,13 +582,13 @@
                             'id' => $text,
                             'option_text' => $text
                         ])->toArray(),
-                    ]) : [])),
+                    ]) : [])) !!},
                     showQuizModal:        false,
                     activeQuestion:       { question: '', options: [], question_type: 'multiple_choice' },
                     selectedAnswer:       '',
                     questionFeedback:     '',
                     isAnswerCorrect:      false,
-                    answeredQuestionIds:  @json($video ? ($videoLog && is_array($videoLog->answered_quiz) ? array_map('intval', array_keys($videoLog->answered_quiz)) : []) : ($material ? \App\Models\VideoParticipationTracking::where('material_id', $material->id)->where('user_id', auth()->id())->pluck('question_id')->map('intval')->toArray() : [])),
+                    answeredQuestionIds:  {!! json_encode($video ? ($videoLog && is_array($videoLog->answered_quiz) ? array_map('intval', array_keys($videoLog->answered_quiz)) : []) : ($material ? \App\Models\VideoParticipationTracking::where('material_id', $material->id)->where('user_id', auth()->id())->pluck('question_id')->map('intval')->toArray() : [])) !!},
                     lastTriggeredTime:    -1,
                     checkInterval:        null,
                     player:               null,

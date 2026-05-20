@@ -10,7 +10,7 @@
         </div>
     </x-slot>
 
-    <div class="py-8 max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
+    <div class="py-8 max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8" x-data="{ questionType: 'multiple_choice', videoQType: 'multiple_choice' }">
         <!-- Notifikasi -->
         @if(session('success'))
             <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-2xl flex items-center shadow-sm">
@@ -30,40 +30,181 @@
 
                     <form action="{{ route('quizzes.questions.store', $quiz) }}" method="POST" class="space-y-4">
                         @csrf
+
+                        <!-- Dropdown Jenis Soal -->
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Pertanyaan</label>
-                            <textarea name="question" rows="3" class="w-full rounded-2xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm font-medium" required placeholder="Ketik soal disini..."></textarea>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Jenis Pertanyaan</label>
+                            <select name="question_type" x-model="questionType" class="w-full rounded-2xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm font-bold">
+                                <option value="multiple_choice">Pilihan Ganda (Multiple Choice)</option>
+                                <option value="true_false">Benar / Salah (True / False)</option>
+                                <option value="short_answer">Jawaban Singkat (Short Answer)</option>
+                                <option value="fill_blank">Isian Rumpang (Fill in the Blank Coding)</option>
+                                <option value="reflection">Refleksi Mandiri (Reflection)</option>
+                                <option value="debugging">Uji Debugging (Debugging Quiz)</option>
+                                <option value="interactive_video">Video Pembelajaran Interaktif (Video Popup Quiz)</option>
+                            </select>
                         </div>
 
-                        <div class="space-y-3 pt-2 border-t border-gray-100">
+                        <!-- Pertanyaan -->
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Pertanyaan / Instruksi Soal</label>
+                            <textarea name="question" rows="3" class="w-full rounded-2xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm font-medium" required placeholder="Ketik soal atau instruksi disini..."></textarea>
+                        </div>
+
+                        <!-- Input Spesifik per Jenis Soal -->
+
+                        <!-- 1. MULTIPLE CHOICE -->
+                        <div x-show="questionType === 'multiple_choice'" class="space-y-3 pt-2 border-t border-gray-100">
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Opsi A</label>
-                                <input type="text" name="option_a" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm" required>
+                                <input type="text" name="option_a" x-bind:required="questionType === 'multiple_choice'" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Opsi B</label>
-                                <input type="text" name="option_b" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm" required>
+                                <input type="text" name="option_b" x-bind:required="questionType === 'multiple_choice'" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Opsi C</label>
-                                <input type="text" name="option_c" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm" required>
+                                <input type="text" name="option_c" x-bind:required="questionType === 'multiple_choice'" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Opsi D</label>
-                                <input type="text" name="option_d" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm" required>
+                                <input type="text" name="option_d" x-bind:required="questionType === 'multiple_choice'" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm">
+                            </div>
+
+                            <div class="pt-2">
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Jawaban Benar</label>
+                                <div class="flex gap-4">
+                                    @foreach(['A', 'B', 'C', 'D'] as $opt)
+                                        <label class="flex items-center gap-2 cursor-pointer p-2 border border-gray-200 rounded-lg hover:bg-indigo-50 hover:border-indigo-200 transition-colors">
+                                            <input type="radio" name="correct_answer" value="{{ $opt }}" x-bind:required="questionType === 'multiple_choice'" class="text-indigo-600 focus:ring-indigo-500">
+                                            <span class="font-bold text-sm text-gray-700">{{ $opt }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
                             </div>
                         </div>
 
-                        <div class="pt-2 border-t border-gray-100">
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Jawaban Benar</label>
+                        <!-- 2. TRUE OR FALSE -->
+                        <div x-show="questionType === 'true_false'" class="pt-2 border-t border-gray-100">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Pernyataan Benar atau Salah?</label>
                             <div class="flex gap-4">
-                                @foreach(['A', 'B', 'C', 'D'] as $opt)
-                                    <label class="flex items-center gap-2 cursor-pointer p-2 border border-gray-200 rounded-lg hover:bg-indigo-50 hover:border-indigo-200 transition-colors">
-                                        <input type="radio" name="correct_answer" value="{{ $opt }}" class="text-indigo-600 focus:ring-indigo-500" required>
-                                        <span class="font-bold text-sm text-gray-700">{{ $opt }}</span>
-                                    </label>
-                                @endforeach
+                                <label class="flex items-center gap-2 cursor-pointer p-3 border border-gray-200 rounded-xl hover:bg-indigo-50 hover:border-indigo-200 transition-colors">
+                                    <input type="radio" name="correct_answer" value="A" x-bind:required="questionType === 'true_false'" class="text-indigo-600 focus:ring-indigo-500">
+                                    <span class="font-bold text-sm text-gray-700">Benar</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer p-3 border border-gray-200 rounded-xl hover:bg-indigo-50 hover:border-indigo-200 transition-colors">
+                                    <input type="radio" name="correct_answer" value="B" x-bind:required="questionType === 'true_false'" class="text-indigo-600 focus:ring-indigo-500">
+                                    <span class="font-bold text-sm text-gray-700">Salah</span>
+                                </label>
                             </div>
+                        </div>
+
+                        <!-- 3. SHORT ANSWER -->
+                        <div x-show="questionType === 'short_answer'" class="pt-2 border-t border-gray-100">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Kunci Jawaban Singkat</label>
+                            <input type="text" name="correct_answer" placeholder="Masukkan jawaban yang benar..." x-bind:required="questionType === 'short_answer'" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm">
+                            <p class="text-xs text-gray-500 mt-1">Jawaban siswa akan dicocokkan secara case-insensitive.</p>
+                        </div>
+
+                        <!-- 4. FILL IN THE BLANK (CODING) -->
+                        <div x-show="questionType === 'fill_blank'" class="pt-2 border-t border-gray-100">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Kunci Jawaban Rumpang (Isian)</label>
+                            <input type="text" name="correct_answer" placeholder="Cth: print" x-bind:required="questionType === 'fill_blank'" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm">
+                            <p class="text-xs text-gray-500 mt-1">Gunakan kata yang tepat untuk mengisi kekosongan kode di atas.</p>
+                        </div>
+
+                        <!-- 5. REFLECTION (No correct answer required) -->
+
+                        <!-- 6. DEBUGGING -->
+                        <div x-show="questionType === 'debugging'" class="pt-2 border-t border-gray-100">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Kunci Solusi Kode Benar</label>
+                            <textarea name="correct_answer" rows="4" placeholder="Ketik kode solusi yang benar di sini..." x-bind:required="questionType === 'debugging'" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm font-mono"></textarea>
+                            <p class="text-xs text-gray-500 mt-1">Jawaban kode siswa akan dicocokkan dengan mengabaikan whitespace.</p>
+                        </div>
+
+                        <!-- 7. INTERACTIVE VIDEO -->
+                        <div x-show="questionType === 'interactive_video'" class="space-y-4 pt-2 border-t border-gray-100">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-1">URL Video Pembelajaran</label>
+                                <input type="text" name="video_url" placeholder="Cth: /videos/html_intro.mp4 atau link Youtube" x-bind:required="questionType === 'interactive_video'" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-1">Timestamp Muncul (detik)</label>
+                                <input type="number" name="timestamp" min="0" placeholder="Cth: 45" x-bind:required="questionType === 'interactive_video'" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Tipe Soal Video</label>
+                                <select name="video_question_type" x-model="videoQType" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm">
+                                    <option value="multiple_choice">Pilihan Ganda (MC)</option>
+                                    <option value="true_false">Benar / Salah (TF)</option>
+                                    <option value="short_answer">Jawaban Teks Singkat</option>
+                                </select>
+                            </div>
+
+                            <!-- Opsi Sub-Tipe Video MC -->
+                            <div x-show="videoQType === 'multiple_choice'" class="space-y-3 pl-4 border-l-2 border-indigo-100">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Opsi A</label>
+                                    <input type="text" name="option_a" x-bind:required="questionType === 'interactive_video' && videoQType === 'multiple_choice'" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Opsi B</label>
+                                    <input type="text" name="option_b" x-bind:required="questionType === 'interactive_video' && videoQType === 'multiple_choice'" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Opsi C</label>
+                                    <input type="text" name="option_c" x-bind:required="questionType === 'interactive_video' && videoQType === 'multiple_choice'" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Opsi D</label>
+                                    <input type="text" name="option_d" x-bind:required="questionType === 'interactive_video' && videoQType === 'multiple_choice'" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Jawaban Benar</label>
+                                    <div class="flex gap-4">
+                                        @foreach(['A', 'B', 'C', 'D'] as $opt)
+                                            <label class="flex items-center gap-2 cursor-pointer p-2 border border-gray-200 rounded-lg">
+                                                <input type="radio" name="correct_answer" value="{{ $opt }}" x-bind:required="questionType === 'interactive_video' && videoQType === 'multiple_choice'" class="text-indigo-600 focus:ring-indigo-500">
+                                                <span class="font-bold text-sm text-gray-700">{{ $opt }}</span>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Opsi Sub-Tipe Video TF -->
+                            <div x-show="videoQType === 'true_false'" class="space-y-3 pl-4 border-l-2 border-indigo-100">
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Pernyataan Benar/Salah?</label>
+                                <div class="flex gap-4">
+                                    <label class="flex items-center gap-2 cursor-pointer p-3 border border-gray-200 rounded-xl">
+                                        <input type="radio" name="correct_answer" value="A" x-bind:required="questionType === 'interactive_video' && videoQType === 'true_false'" class="text-indigo-600 focus:ring-indigo-500">
+                                        <span class="font-bold text-sm text-gray-700">Benar</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer p-3 border border-gray-200 rounded-xl">
+                                        <input type="radio" name="correct_answer" value="B" x-bind:required="questionType === 'interactive_video' && videoQType === 'true_false'" class="text-indigo-600 focus:ring-indigo-500">
+                                        <span class="font-bold text-sm text-gray-700">Salah</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Opsi Sub-Tipe Video Short Answer -->
+                            <div x-show="videoQType === 'short_answer'" class="space-y-3 pl-4 border-l-2 border-indigo-100">
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Kunci Jawaban Singkat Video</label>
+                                <input type="text" name="correct_answer" placeholder="Masukkan jawaban video..." x-bind:required="questionType === 'interactive_video' && videoQType === 'short_answer'" class="w-full rounded-xl border-gray-300 shadow-sm text-sm">
+                            </div>
+                        </div>
+
+                        <!-- Feedback Pembahasan -->
+                        <div class="pt-2 border-t border-gray-100">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Pembahasan / Feedback Jawaban (Opsional)</label>
+                            <textarea name="feedback" rows="2" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm" placeholder="Tulis penjelasan jawaban di sini..."></textarea>
+                        </div>
+
+                        <!-- Poin Soal -->
+                        <div class="pt-2">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Beban Nilai / Poin</label>
+                            <input type="number" name="points" min="1" value="10" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm font-bold">
                         </div>
 
                         <div class="pt-4">
@@ -86,7 +227,7 @@
                     </div>
                     <div class="relative z-10 text-right">
                         <p class="text-sm text-indigo-100 font-medium">Beban Skor Maksimal:</p>
-                        <p class="text-2xl font-black">{{ $quiz->questions->count() * 10 }} Poin</p> <!-- Misal 10 poin per soal -->
+                        <p class="text-2xl font-black">{{ $quiz->questions->sum('points') }} Poin</p>
                     </div>
                 </div>
 
@@ -108,23 +249,71 @@
                                     {{ $index + 1 }}
                                 </div>
                                 <div class="flex-1 w-full">
-                                    <p class="font-bold text-gray-800 text-lg mb-4">{{ $question->question }}</p>
-                                    
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        @foreach($question->options as $key => $text)
-                                            <div class="flex items-center gap-3 p-3 rounded-xl border {{ $question->correct_answer === $key ? 'border-emerald-500 bg-emerald-50 ring-2 ring-emerald-200' : 'border-gray-200 bg-white' }}">
-                                                <span class="w-6 h-6 flex items-center justify-center rounded-md text-xs font-bold {{ $question->correct_answer === $key ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-500' }}">
-                                                    {{ $key }}
-                                                </span>
-                                                <span class="text-sm font-medium {{ $question->correct_answer === $key ? 'text-emerald-800' : 'text-gray-600' }}">
-                                                    {{ $text }}
-                                                </span>
-                                                @if($question->correct_answer === $key)
-                                                    <svg class="w-5 h-5 text-emerald-500 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-                                                @endif
-                                            </div>
-                                        @endforeach
+                                    <div class="flex items-center gap-2 mb-2 flex-wrap">
+                                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 uppercase">
+                                            {{ str_replace('_', ' ', $question->question_type) }}
+                                        </span>
+                                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700">
+                                            {{ $question->points }} Poin
+                                        </span>
                                     </div>
+                                    
+                                    <p class="font-bold text-gray-800 text-lg mb-4">{{ $question->question }}</p>
+
+                                    <!-- Render MC / TF options -->
+                                    @if(in_array($question->question_type, ['multiple_choice', 'true_false']))
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                                            @foreach($question->options as $key => $text)
+                                                <div class="flex items-center gap-3 p-3 rounded-xl border {{ $question->correct_answer === $key ? 'border-emerald-500 bg-emerald-50 ring-2 ring-emerald-200' : 'border-gray-200 bg-white' }}">
+                                                    <span class="w-6 h-6 flex items-center justify-center rounded-md text-xs font-bold {{ $question->correct_answer === $key ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-500' }}">
+                                                        {{ $key }}
+                                                    </span>
+                                                    <span class="text-sm font-medium {{ $question->correct_answer === $key ? 'text-emerald-800' : 'text-gray-600' }}">
+                                                        {{ $text }}
+                                                    </span>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @endif
+
+                                    <!-- Render Short Answer / Fill Blank keys -->
+                                    @if(in_array($question->question_type, ['short_answer', 'fill_blank']))
+                                        <div class="p-3 bg-gray-50 rounded-xl border border-gray-150 text-sm font-semibold text-gray-700 mb-4">
+                                            Kunci Jawaban Benar: <span class="text-indigo-600 font-mono">{{ $question->correct_answer }}</span>
+                                        </div>
+                                    @endif
+
+                                    <!-- Render Debugging solutions -->
+                                    @if($question->question_type === 'debugging')
+                                        <div class="space-y-2 mb-4">
+                                            <p class="text-xs font-bold text-gray-400 uppercase">Kunci Solusi Benar:</p>
+                                            <pre class="p-3 bg-gray-900 text-green-400 rounded-xl font-mono text-xs overflow-x-auto">{{ $question->correct_answer }}</pre>
+                                        </div>
+                                    @endif
+
+                                    <!-- Render Reflection -->
+                                    @if($question->question_type === 'reflection')
+                                        <div class="p-3 bg-blue-50 rounded-xl border border-blue-150 text-sm font-medium text-blue-800 mb-4">
+                                            ℹ️ Pertanyaan reflektif. Siswa dapat mengutarakan pendapat bebas mereka.
+                                        </div>
+                                    @endif
+
+                                    <!-- Render Interactive Video parameters -->
+                                    @if($question->question_type === 'interactive_video')
+                                        <div class="p-4 bg-purple-50 border border-purple-100 rounded-xl text-sm mb-4 space-y-2">
+                                            <p class="font-bold text-purple-900">Pop-up Video Detail:</p>
+                                            <p class="text-xs text-purple-700">URL: <span class="font-mono">{{ $question->options['video_url'] ?? '' }}</span></p>
+                                            <p class="text-xs text-purple-700">Timestamp: <span class="font-bold">{{ $question->options['timestamp'] ?? 0 }} detik</span></p>
+                                            <p class="text-xs text-purple-700">Tipe Popup: <span class="font-bold uppercase">{{ $question->options['video_question_type'] ?? '' }}</span></p>
+                                            <p class="text-xs text-purple-700">Kunci Jawaban: <span class="font-mono bg-white px-2 py-0.5 rounded">{{ $question->correct_answer }}</span></p>
+                                        </div>
+                                    @endif
+
+                                    @if($question->feedback)
+                                        <div class="p-3 bg-yellow-50/55 rounded-xl border border-yellow-100 text-xs text-yellow-800">
+                                            <strong>Pembahasan:</strong> {{ $question->feedback }}
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         </div>

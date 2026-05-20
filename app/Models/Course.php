@@ -8,6 +8,11 @@ class Course extends Model
 {
     protected $fillable = ['name', 'description', 'cover_image', 'banner_image', 'code', 'is_leaderboard_enabled'];
 
+    public function modules()
+    {
+        return $this->hasMany(Module::class)->orderBy('order_number');
+    }
+
     public function materials()
     {
         return $this->hasMany(Material::class);

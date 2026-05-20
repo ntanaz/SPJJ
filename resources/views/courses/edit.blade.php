@@ -66,6 +66,22 @@
                     </button>
                 </div>
             </form>
+
+            <div class="mt-8 border-t border-red-100 pt-8">
+                <div class="bg-red-50/50 rounded-2xl border border-red-100 p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h4 class="text-lg font-bold text-red-800">Zona Bahaya: Hapus Mata Pelajaran</h4>
+                        <p class="text-sm text-red-600 mt-1">Tindakan ini tidak dapat dibatalkan. Seluruh bab/modul, materi, tugas, kuis, forum diskusi, dan data nilai siswa di dalam mata pelajaran ini akan dihapus secara permanen.</p>
+                    </div>
+                    <form action="{{ route('courses.destroy', $course) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus mata pelajaran ini? Seluruh data terkait akan hilang permanen!');" class="w-full md:w-auto">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="w-full md:w-auto px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-sm transition-colors text-sm whitespace-nowrap text-center">
+                            Hapus Mata Pelajaran
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 </x-app-layout>

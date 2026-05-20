@@ -11,9 +11,14 @@
     <div class="py-12 max-w-4xl mx-auto sm:px-6 lg:px-8">
         <!-- Progress Bar Visual & Timer -->
         <div class="mb-8" x-data="{ total: {{ $quiz->questions->count() }}, answered: 0 }" x-init="
-            const inputs = document.querySelectorAll('input[type=radio]');
-            const updateCount = () => { answered = document.querySelectorAll('input[type=radio]:checked').length; };
+            const inputs = document.querySelectorAll('input[type=radio], input[type=text], textarea');
+            const updateCount = () => { 
+                const radios = document.querySelectorAll('input[type=radio]:checked').length;
+                const texts = Array.from(document.querySelectorAll('input[type=text], textarea')).filter(el => el.value.trim() !== '').length;
+                answered = radios + texts; 
+            };
             inputs.forEach(el => el.addEventListener('change', updateCount));
+            inputs.forEach(el => el.addEventListener('input', updateCount));
             updateCount();
         ">
             <div class="flex justify-between items-end mb-2">
@@ -82,7 +87,6 @@
             <form action="{{ route('student.quizzes.submit', $attempt) }}" method="POST" id="quiz-form">
                 @csrf
                 <div class="p-8 sm:p-12">
-                    
                     <div class="space-y-12">
                         @foreach($quiz->questions as $index => $question)
                             <div class="relative pl-0 sm:pl-16">
@@ -97,25 +101,120 @@
                                 <!-- Question Text -->
                                 <h4 class="text-xl font-bold text-gray-800 leading-relaxed mb-6">{{ $question->question }}</h4>
                                 
-                                <!-- Options -->
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    @foreach($question->options as $key => $option)
-                                        <label class="group relative flex cursor-pointer rounded-2xl border-2 border-gray-200 bg-white p-5 hover:border-amber-300 hover:bg-amber-50 focus-within:ring-4 focus-within:ring-amber-100 transition-all">
-                                            <div class="flex w-full items-center justify-between">
-                                                <div class="flex items-center gap-4">
-                                                    <div class="relative flex h-6 w-6 items-center justify-center">
-                                                        <input type="radio" name="answers[{{ $question->id }}]" value="{{ $key }}" class="peer h-6 w-6 border-2 border-gray-300 text-amber-600 focus:ring-amber-500 rounded-full bg-white checked:border-amber-500 checked:bg-amber-500 transition-colors">
-                                                    </div>
-                                                    <div class="text-sm font-bold text-gray-800 {{-- peer-checked:text-amber-900 --}}">
-                                                        <span class="mr-2 inline-block px-2 py-1 bg-gray-100 text-gray-500 rounded-lg text-xs {{-- group-hover:bg-amber-200 group-hover:text-amber-800 --}}">{{ $key }}</span>
-                                                        {{ $option }}
+                                <!-- Options / Inputs depending on type -->
+                                
+                                <!-- 1. Multiple Choice -->
+                                @if($question->question_type === 'multiple_choice')
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        @foreach($question->options as $key => $option)
+                                            <label class="group relative flex cursor-pointer rounded-2xl border-2 border-gray-200 bg-white p-5 hover:border-amber-300 hover:bg-amber-50 focus-within:ring-4 focus-within:ring-amber-100 transition-all">
+                                                <div class="flex w-full items-center justify-between">
+                                                    <div class="flex items-center gap-4">
+                                                        <div class="relative flex h-6 w-6 items-center justify-center">
+                                                            <input type="radio" name="answers[{{ $question->id }}]" value="{{ $key }}" class="peer h-6 w-6 border-2 border-gray-300 text-amber-600 focus:ring-amber-500 rounded-full bg-white checked:border-amber-500 checked:bg-amber-500 transition-colors">
+                                                        </div>
+                                                        <div class="text-sm font-bold text-gray-800">
+                                                            <span class="mr-2 inline-block px-2 py-1 bg-gray-100 text-gray-500 rounded-lg text-xs">{{ $key }}</span>
+                                                            {{ $option }}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <!-- Ring Outline effect when checked (requires custom CSS or simple peer class trick) -->
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                
+                                <!-- 2. True / False -->
+                                @elseif($question->question_type === 'true_false')
+                                    <div class="flex gap-6">
+                                        <label class="group relative flex cursor-pointer rounded-2xl border-2 border-gray-200 bg-white px-8 py-5 hover:border-amber-300 hover:bg-amber-50 focus-within:ring-4 focus-within:ring-amber-100 transition-all">
+                                            <input type="radio" name="answers[{{ $question->id }}]" value="A" class="peer h-6 w-6 mr-3 border-2 border-gray-300 text-amber-600 focus:ring-amber-500 rounded-full bg-white checked:border-amber-500 checked:bg-amber-500 transition-colors">
+                                            <span class="text-sm font-bold text-gray-800">Benar</span>
                                         </label>
-                                    @endforeach
-                                </div>
+                                        <label class="group relative flex cursor-pointer rounded-2xl border-2 border-gray-200 bg-white px-8 py-5 hover:border-amber-300 hover:bg-amber-50 focus-within:ring-4 focus-within:ring-amber-100 transition-all">
+                                            <input type="radio" name="answers[{{ $question->id }}]" value="B" class="peer h-6 w-6 mr-3 border-2 border-gray-300 text-amber-600 focus:ring-amber-500 rounded-full bg-white checked:border-amber-500 checked:bg-amber-500 transition-colors">
+                                            <span class="text-sm font-bold text-gray-800">Salah</span>
+                                        </label>
+                                    </div>
+                                
+                                <!-- 3. Short Answer -->
+                                @elseif($question->question_type === 'short_answer')
+                                    <div class="w-full">
+                                        <input type="text" name="answers[{{ $question->id }}]" placeholder="Ketik jawaban singkat Anda di sini..." class="w-full rounded-2xl border-2 border-gray-200 px-5 py-4 focus:border-amber-500 focus:ring focus:ring-amber-200 text-sm font-medium">
+                                    </div>
+                                
+                                <!-- 4. Fill in the Blank -->
+                                @elseif($question->question_type === 'fill_blank')
+                                    <div class="w-full">
+                                        <input type="text" name="answers[{{ $question->id }}]" placeholder="Masukkan kata kunci/kode untuk melengkapi..." class="w-full rounded-2xl border-2 border-gray-200 px-5 py-4 focus:border-amber-500 focus:ring focus:ring-amber-200 text-sm font-mono">
+                                    </div>
+
+                                <!-- 5. Reflection -->
+                                @elseif($question->question_type === 'reflection')
+                                    <div class="w-full">
+                                        <textarea name="answers[{{ $question->id }}]" rows="4" placeholder="Ketik refleksi atau pendapat bebas Anda di sini..." class="w-full rounded-2xl border-2 border-gray-200 px-5 py-4 focus:border-amber-500 focus:ring focus:ring-amber-200 text-sm font-medium"></textarea>
+                                    </div>
+
+                                <!-- 6. Debugging -->
+                                @elseif($question->question_type === 'debugging')
+                                    <div class="w-full space-y-4">
+                                        <textarea name="answers[{{ $question->id }}]" rows="6" placeholder="Tulis perbaikan kode pemrograman Anda di sini..." class="w-full rounded-2xl border-2 border-gray-200 bg-gray-900 text-green-400 font-mono text-sm px-5 py-4 focus:border-amber-500 focus:ring focus:ring-amber-200"></textarea>
+                                    </div>
+
+                                <!-- 7. Interactive Video -->
+                                @elseif($question->question_type === 'interactive_video')
+                                    <div class="space-y-4" x-data="{ paused: false, answered: false, currentTime: 0 }">
+                                        <div class="relative rounded-2xl overflow-hidden shadow-md bg-black">
+                                            <video id="video-{{ $question->id }}" class="w-full max-h-[400px]" controls
+                                                   @timeupdate="currentTime = $el.currentTime; if (currentTime >= {{ $question->options['timestamp'] ?? 0 }} && !answered) { $el.pause(); paused = true; }">
+                                                <source src="{{ $question->options['video_url'] ?? '' }}" type="video/mp4">
+                                                Your browser does not support the video tag.
+                                            </video>
+                                        </div>
+                                        
+                                        <div x-show="paused" class="p-5 bg-amber-50 border border-amber-200 rounded-2xl shadow-sm transition-all duration-300">
+                                            <p class="font-bold text-amber-900 mb-3 flex items-center gap-2">
+                                                <svg class="w-5 h-5 text-amber-600 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 5.25v13.5m-7.5-13.5v13.5" /></svg>
+                                                Video Dijeda Otomatis: Jawab kuis video di bawah ini
+                                            </p>
+                                            
+                                            <div class="bg-white p-4 rounded-xl border border-amber-100">
+                                                <!-- MC sub-type inside video -->
+                                                @if(($question->options['video_question_type'] ?? '') === 'multiple_choice')
+                                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                        @foreach(($question->options['options'] ?? []) as $key => $option)
+                                                            <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-200 bg-white hover:bg-amber-50 cursor-pointer transition-colors">
+                                                                <input type="radio" name="answers[{{ $question->id }}]" value="{{ $key }}" @change="answered = true; paused = false; document.getElementById('video-{{ $question->id }}').play()" class="text-amber-600 focus:ring-amber-500">
+                                                                <span class="font-bold text-sm text-gray-700">{{ $key }}. {{ $option }}</span>
+                                                            </label>
+                                                        @endforeach
+                                                    </div>
+                                                
+                                                <!-- TF sub-type inside video -->
+                                                @elseif(($question->options['video_question_type'] ?? '') === 'true_false')
+                                                    <div class="flex gap-4">
+                                                        <label class="flex items-center gap-2 cursor-pointer p-3 border border-gray-200 bg-white rounded-xl hover:bg-amber-50 transition-colors">
+                                                            <input type="radio" name="answers[{{ $question->id }}]" value="A" @change="answered = true; paused = false; document.getElementById('video-{{ $question->id }}').play()" class="text-amber-600 focus:ring-amber-500">
+                                                            <span class="font-bold text-sm text-gray-700">Benar</span>
+                                                        </label>
+                                                        <label class="flex items-center gap-2 cursor-pointer p-3 border border-gray-200 bg-white rounded-xl hover:bg-amber-50 transition-colors">
+                                                            <input type="radio" name="answers[{{ $question->id }}]" value="B" @change="answered = true; paused = false; document.getElementById('video-{{ $question->id }}').play()" class="text-amber-600 focus:ring-amber-500">
+                                                            <span class="font-bold text-sm text-gray-700">Salah</span>
+                                                        </label>
+                                                    </div>
+                                                
+                                                <!-- SA sub-type inside video -->
+                                                @else
+                                                    <div class="space-y-3">
+                                                        <input type="text" id="video-sa-{{ $question->id }}" name="answers[{{ $question->id }}]" placeholder="Ketik jawaban Anda..." class="w-full rounded-xl border-gray-300 shadow-sm focus:border-amber-500 focus:ring focus:ring-amber-200">
+                                                        <button type="button" @click="if (document.getElementById('video-sa-{{ $question->id }}').value.trim() !== '') { answered = true; paused = false; document.getElementById('video-{{ $question->id }}').play() }" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-sm font-bold transition-colors">
+                                                            Kirim Jawaban & Lanjutkan
+                                                        </button>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
                             
                             @if(!$loop->last)

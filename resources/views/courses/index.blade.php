@@ -34,13 +34,11 @@
                         <p class="text-gray-600 text-sm line-clamp-3 mb-6">{{ $course->description }}</p>
                         
                         <div class="flex gap-2 border-t border-gray-100 pt-4">
-                            <a href="{{ route('courses.edit', $course) }}" class="flex-1 text-center py-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-600 hover:text-white transition-colors font-medium text-sm">Edit</a>
-                            
-                            <form action="{{ route('courses.destroy', $course) }}" method="POST" class="flex-1" onsubmit="return confirm('Yakin ingin menghapus?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="w-full text-center py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-600 hover:text-white transition-colors font-medium text-sm">Hapus</button>
-                            </form>
+                            <a href="{{ route('student.courses.show', $course) }}" class="flex-1 text-center py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold text-sm">Lihat Kelas</a>
+                            <a href="{{ route('courses.edit', $course) }}" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-semibold text-sm flex items-center justify-center gap-1" title="Ubah Mata Pelajaran">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                Edit
+                            </a>
                         </div>
                     </div>
                 </div>

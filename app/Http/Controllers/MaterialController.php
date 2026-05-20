@@ -16,7 +16,7 @@ class MaterialController extends Controller
 
     public function create()
     {
-        $courses = Course::all();
+        $courses = Course::with('modules')->get();
         return view('materials.create', compact('courses'));
     }
 
@@ -24,6 +24,7 @@ class MaterialController extends Controller
     {
         $request->validate([
             'course_id' => 'required|exists:courses,id',
+            'module_id' => 'required|exists:modules,id',
             'title' => 'required|string|max:255',
             'format' => 'required|in:document,video,link,text',
             'order' => 'required|integer',
@@ -32,7 +33,7 @@ class MaterialController extends Controller
             'requires_previous' => 'boolean',
             'is_published' => 'boolean',
             'publish_at' => 'nullable|date',
-            'file' => 'nullable|file|max:20480', // max 20MB
+            'file' => 'nullable|file|max:102400', // max 100MB
             'youtube_url' => 'nullable|url',
             'text_content' => 'nullable|string'
         ]);
@@ -56,11 +57,13 @@ class MaterialController extends Controller
     public function update(Request $request, Material $material)
     {
         $request->validate([
+            'course_id' => 'required|exists:courses,id',
+            'module_id' => 'required|exists:modules,id',
             'title' => 'required|string|max:255',
             'format' => 'required|in:document,video,link,text',
             'order' => 'required|integer',
             'description' => 'nullable|string',
-            'file' => 'nullable|file|max:20480',
+            'file' => 'nullable|file|max:102400',
             'youtube_url' => 'nullable|url',
             'text_content' => 'nullable|string'
         ]);

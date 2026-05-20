@@ -63,12 +63,55 @@ class StudentDashboardController extends Controller
 
             $progress = $totalAssignments > 0 ? round(($submittedAssignments / $totalAssignments) * 100) : 0;
 
+            // Gamification & Modular Progress Integration
+            $totalXp = DB::table('student_xp')->where('user_id', $user->id)->value('total_xp') ?? $user->points ?? 0;
+            $completedActivitiesCount = DB::table('xp_logs')->where('user_id', $user->id)->count();
+
+            $modulesProgress = DB::table('modules')
+                ->whereIn('course_id', $enrolledCourseIds)
+                ->leftJoin('student_progress', function($join) use ($user) {
+                    $join->on('modules.id', '=', 'student_progress.module_id')
+                         ->where('student_progress.user_id', '=', $user->id);
+                })
+                ->select('modules.id', 'modules.title', 'student_progress.progress_percentage')
+                ->get()
+                ->map(function($item) {
+                    return [
+                        'title' => $item->title,
+                        'percentage' => $item->progress_percentage ?? 0
+                    ];
+                });
+
+            $overallProgress = $modulesProgress->count() > 0 
+                ? round($modulesProgress->avg('percentage')) 
+                : $progress;
+
+            // Badge evaluation
+            $badge = 'Pemula';
+            $badgeIcon = '🌟';
+            if ($totalXp >= 600) {
+                $badge = 'Zenith Master';
+                $badgeIcon = '🏆';
+            } elseif ($totalXp >= 300) {
+                $badge = 'Cendekiawan';
+                $badgeIcon = '🧠';
+            } elseif ($totalXp >= 100) {
+                $badge = 'Penjelajah';
+                $badgeIcon = '🚀';
+            }
+
             return view('dashboard', compact(
                 'upcomingAssignments', 
                 'activeQuizzes', 
                 'recentAssignments', 
                 'todaySchedule', 
                 'progress', 
+                'totalXp',
+                'completedActivitiesCount',
+                'modulesProgress',
+                'overallProgress',
+                'badge',
+                'badgeIcon',
                 'announcements'
             ));
         }

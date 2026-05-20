@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        {{ __('Pengaturan Sistem LMS') }}
+        {{ __('Pengaturan Sistem Zenith') }}
     </x-slot>
 
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">

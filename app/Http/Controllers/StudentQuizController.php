@@ -87,16 +87,46 @@ class StudentQuizController extends Controller
 
         foreach ($quiz->questions as $question) {
             $selected = $answers[$question->id] ?? null;
-            $isCorrect = $selected === $question->correct_answer;
-            
+            $isCorrect = false;
+            $selectedOption = null;
+            $textAnswer = null;
+
+            $type = $question->question_type;
+
+            if ($type === 'multiple_choice' || $type === 'true_false') {
+                $selectedOption = $selected;
+                $isCorrect = strtolower(trim($selectedOption)) === strtolower(trim($question->correct_answer));
+            } elseif ($type === 'short_answer' || $type === 'fill_blank') {
+                $textAnswer = $selected;
+                $isCorrect = strtolower(trim($textAnswer)) === strtolower(trim($question->correct_answer));
+            } elseif ($type === 'reflection') {
+                $textAnswer = $selected;
+                $isCorrect = !empty(trim($textAnswer));
+            } elseif ($type === 'debugging') {
+                $textAnswer = $selected;
+                $cleanInput = preg_replace('/\s+/', '', $textAnswer);
+                $cleanCorrect = preg_replace('/\s+/', '', $question->correct_answer);
+                $isCorrect = strtolower($cleanInput) === strtolower($cleanCorrect);
+            } elseif ($type === 'interactive_video') {
+                $videoQType = $question->options['video_question_type'] ?? 'multiple_choice';
+                if ($videoQType === 'multiple_choice' || $videoQType === 'true_false') {
+                    $selectedOption = $selected;
+                    $isCorrect = strtolower(trim($selectedOption)) === strtolower(trim($question->correct_answer));
+                } else {
+                    $textAnswer = $selected;
+                    $isCorrect = strtolower(trim($textAnswer)) === strtolower(trim($question->correct_answer));
+                }
+            }
+
             if ($isCorrect) {
                 $pointsEarned += $question->points;
             }
-            
+
             $attempt->answers()->updateOrCreate(
                 ['quiz_question_id' => $question->id],
                 [
-                    'selected_option' => $selected,
+                    'selected_option' => $selectedOption,
+                    'text_answer' => $textAnswer,
                     'is_correct' => $isCorrect
                 ]
             );
@@ -110,9 +140,9 @@ class StudentQuizController extends Controller
             'status' => 'completed',
         ]);
 
-        // Award points to user
+        // Award XP using XpService
         $user = auth()->user();
-        $user->increment('points', $pointsEarned);
+        \App\Services\XpService::addXp($user, 'quiz', $quiz->module_id, 'QuizAttempt', $attempt->id);
 
         // Pre-test Attendance Integration
         $attendance = \App\Models\Attendance::where('pre_test_quiz_id', $quiz->id)

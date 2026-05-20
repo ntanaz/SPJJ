@@ -15,8 +15,12 @@
             @forelse($courses as $course)
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group hover:shadow-lg transition-all relative transform hover:-translate-y-1">
                     <div class="h-32 bg-gradient-to-br from-blue-500 to-indigo-600 relative overflow-hidden flex items-center justify-center">
-                        <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/black-scales.png')]"></div>
-                        <svg class="w-16 h-16 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                        @if($course->cover_image)
+                            <img src="{{ asset('storage/' . $course->cover_image) }}" alt="{{ $course->name }}" class="w-full h-full object-cover">
+                        @else
+                            <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/black-scales.png')]"></div>
+                            <svg class="w-16 h-16 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                        @endif
                     </div>
                     <div class="p-6">
                         <div class="flex justify-between items-start mb-2">
@@ -25,10 +29,10 @@
                         <p class="text-gray-600 text-sm line-clamp-2 mb-6">{{ $course->description }}</p>
                         
                         <div class="flex justify-between items-center text-xs text-indigo-500 font-bold mb-2">
-                            <span>Sisa Modul: {{ $course->materials->count() }} Bab</span>
+                            <span>Progress: {{ $course->progress_percent ?? 0 }}% selesai ({{ $course->completed_count ?? 0 }}/{{ $course->materials->count() }} Bab)</span>
                         </div>
                         <div class="w-full bg-gray-100 rounded-full h-2 mb-6">
-                            <div class="bg-gradient-to-r from-blue-500 to-indigo-500 h-2 rounded-full" style="width: 25%"></div>
+                            <div class="bg-gradient-to-r from-blue-500 to-indigo-500 h-2 rounded-full" style="width: {{ $course->progress_percent ?? 0 }}%"></div>
                         </div>
 
                         <a href="{{ route('student.courses.show', $course) }}" class="block w-full text-center py-3 bg-indigo-50 text-indigo-600 font-bold rounded-xl hover:bg-indigo-600 hover:text-white transition-colors shadow-sm">

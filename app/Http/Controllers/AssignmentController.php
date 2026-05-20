@@ -16,7 +16,7 @@ class AssignmentController extends Controller
 
     public function create()
     {
-        $courses = Course::all();
+        $courses = Course::with('modules')->get();
         return view('assignments.create', compact('courses'));
     }
 
@@ -24,10 +24,11 @@ class AssignmentController extends Controller
     {
         $request->validate([
             'course_id' => 'required|exists:courses,id',
+            'module_id' => 'required|exists:modules,id',
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'deadline' => 'required|date',
-            'attachment' => 'nullable|file|max:20480',
+            'attachment' => 'nullable|file|max:102400',
             'is_published' => 'boolean',
             'max_score' => 'required|integer|min:1'
         ]);
@@ -56,10 +57,12 @@ class AssignmentController extends Controller
     public function update(Request $request, Assignment $assignment)
     {
         $request->validate([
+            'course_id' => 'required|exists:courses,id',
+            'module_id' => 'required|exists:modules,id',
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'deadline' => 'required|date',
-            'attachment' => 'nullable|file|max:20480',
+            'attachment' => 'nullable|file|max:102400',
             'max_score' => 'required|integer|min:1'
         ]);
 

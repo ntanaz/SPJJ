@@ -44,8 +44,17 @@
                             @endif
                         </td>
                         <td class="p-4">
-                            @if($submission->file_path)
-                                <a href="{{ asset('storage/' . $submission->file_path) }}" target="_blank" class="text-indigo-600 hover:text-indigo-800 font-bold flex items-center space-x-1">
+                            @if($submission->attachments && count($submission->attachments) > 0)
+                                <div class="flex flex-col gap-1">
+                                @foreach($submission->attachments as $attachment)
+                                    <a href="{{ asset('storage/' . $attachment['path']) }}" target="_blank" class="text-indigo-650 hover:text-indigo-850 font-bold flex items-center space-x-1 text-xs">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                        <span class="truncate max-w-[150px]">{{ $attachment['name'] ?? 'Download' }}</span>
+                                    </a>
+                                @endforeach
+                                </div>
+                            @elseif($submission->file_path)
+                                <a href="{{ asset('storage/' . $submission->file_path) }}" target="_blank" class="text-indigo-605 hover:text-indigo-805 font-bold flex items-center space-x-1">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                     <span>Download</span>
                                 </a>

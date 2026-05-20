@@ -45,7 +45,7 @@
 
                     <div>
                         <label for="email" class="block text-sm font-bold text-gray-700 mb-2">Alamat Email</label>
-                        <input type="email" name="email" id="email" value="{{ old('email') }}" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-colors" placeholder="Cth: budi@lms.com" required>
+                        <input type="email" name="email" id="email" value="{{ old('email') }}" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-colors" placeholder="Cth: budi@zenith.com" required>
                         @error('email')<p class="mt-1 text-sm text-red-600 font-medium">{{ $message }}</p>@enderror
                     </div>
 

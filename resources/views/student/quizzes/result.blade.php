@@ -44,6 +44,7 @@
                         @php
                             $answer = $attempt->answers->where('quiz_question_id', $question->id)->first();
                             $selected = $answer ? $answer->selected_option : null;
+                            $textAnswer = $answer ? $answer->text_answer : null;
                             $isCorrect = $answer ? $answer->is_correct : false;
                         @endphp
                         <div class="p-6 rounded-2xl border-2 {{ $isCorrect ? 'border-emerald-100 bg-emerald-50/30' : 'border-red-100 bg-red-50/30' }}">
@@ -57,39 +58,142 @@
                                     @endif
                                 </div>
                                 
-                                <div class="flex-1">
+                                <div class="flex-1 w-full overflow-hidden">
+                                    <div class="flex items-center gap-2 mb-2 flex-wrap">
+                                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 uppercase">
+                                            {{ str_replace('_', ' ', $question->question_type) }}
+                                        </span>
+                                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold {{ $isCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700' }}">
+                                            {{ $isCorrect ? $question->points . ' / ' . $question->points : '0 / ' . $question->points }} Poin
+                                        </span>
+                                    </div>
+
                                     <p class="text-lg font-bold text-gray-800 mb-4"><span class="text-gray-400 mr-2">{{ $index + 1 }}.</span> {{ $question->question }}</p>
                                     
-                                    <div class="space-y-2">
-                                        @foreach($question->options as $key => $text)
-                                            @php
-                                                $isSelected = $selected === $key;
-                                                $isRealCorrect = $question->correct_answer === $key;
-                                                
-                                                // Determine styling
-                                                if ($isRealCorrect) {
-                                                    $bgClass = 'bg-emerald-100 border-emerald-300 text-emerald-800';
-                                                    $icon = '<svg class="w-5 h-5 text-emerald-600 ml-auto" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>';
-                                                } elseif ($isSelected && !$isCorrect) {
-                                                    $bgClass = 'bg-red-100 border-red-300 text-red-800';
-                                                    $icon = '<svg class="w-5 h-5 text-red-600 ml-auto" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>';
-                                                } else {
-                                                    $bgClass = 'bg-white border-gray-200 text-gray-500';
-                                                    $icon = '';
-                                                }
-                                            @endphp
-                                            <div class="flex items-center p-3 rounded-xl border {{ $bgClass }} transition-colors">
-                                                <div class="w-6 h-6 flex flex-shrink-0 items-center justify-center rounded text-xs font-bold mr-3 @if($isRealCorrect) bg-emerald-500 text-white @elseif($isSelected) bg-red-500 text-white @else bg-gray-100 text-gray-400 @endif">
-                                                    {{ $key }}
+                                    <!-- Render MC / TF -->
+                                    @if(in_array($question->question_type, ['multiple_choice', 'true_false']))
+                                        <div class="space-y-2">
+                                            @foreach(($question->options ?? []) as $key => $text)
+                                                @php
+                                                    $isSelected = $selected === $key;
+                                                    $isRealCorrect = $question->correct_answer === $key;
+                                                    
+                                                    if ($isRealCorrect) {
+                                                        $bgClass = 'bg-emerald-100 border-emerald-300 text-emerald-800';
+                                                        $icon = '<svg class="w-5 h-5 text-emerald-600 ml-auto" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>';
+                                                    } elseif ($isSelected && !$isCorrect) {
+                                                        $bgClass = 'bg-red-100 border-red-300 text-red-800';
+                                                        $icon = '<svg class="w-5 h-5 text-red-600 ml-auto" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>';
+                                                    } else {
+                                                        $bgClass = 'bg-white border-gray-200 text-gray-500';
+                                                        $icon = '';
+                                                    }
+                                                @endphp
+                                                <div class="flex items-center p-3 rounded-xl border {{ $bgClass }} transition-colors">
+                                                    <div class="w-6 h-6 flex flex-shrink-0 items-center justify-center rounded text-xs font-bold mr-3 @if($isRealCorrect) bg-emerald-500 text-white @elseif($isSelected) bg-red-500 text-white @else bg-gray-100 text-gray-400 @endif">
+                                                        {{ $key }}
+                                                    </div>
+                                                    <span class="text-sm font-bold">{{ $text }}</span>
+                                                    {!! $icon !!}
                                                 </div>
-                                                <span class="text-sm font-bold">{{ $text }}</span>
-                                                {!! $icon !!}
-                                            </div>
-                                        @endforeach
-                                    </div>
+                                            @endforeach
+                                        </div>
                                     
-                                    @if(!$isCorrect && !$selected)
-                                        <p class="text-red-500 text-sm font-bold mt-3">⚠️ Anda tidak menjawab pertanyaan ini.</p>
+                                    <!-- Render Short Answer / Fill in the blank -->
+                                    @elseif(in_array($question->question_type, ['short_answer', 'fill_blank']))
+                                        <div class="space-y-2 text-sm">
+                                            <div class="p-3 rounded-xl border bg-white flex items-center">
+                                                <span class="font-bold mr-2 text-gray-500">Jawaban Anda:</span>
+                                                <span class="font-mono font-bold {{ $isCorrect ? 'text-emerald-600' : 'text-red-600' }}">{{ $textAnswer ?: '(Kosong)' }}</span>
+                                            </div>
+                                            <div class="p-3 rounded-xl border bg-emerald-50 border-emerald-250 flex items-center">
+                                                <span class="font-bold mr-2 text-emerald-800">Jawaban Benar:</span>
+                                                <span class="font-mono font-bold text-emerald-800">{{ $question->correct_answer }}</span>
+                                            </div>
+                                        </div>
+
+                                    <!-- Render Reflection -->
+                                    @elseif($question->question_type === 'reflection')
+                                        <div class="space-y-2 text-sm">
+                                            <div class="p-4 rounded-xl border bg-white">
+                                                <p class="font-bold text-gray-500 mb-2">Jawaban Refleksi Anda:</p>
+                                                <p class="font-medium text-gray-800 italic leading-relaxed">"{{ $textAnswer ?: '(Kosong)' }}"</p>
+                                            </div>
+                                            <p class="text-xs text-emerald-600 font-bold">✓ Refleksi telah diterima dan poin penuh diberikan.</p>
+                                        </div>
+
+                                    <!-- Render Debugging -->
+                                    @elseif($question->question_type === 'debugging')
+                                        <div class="space-y-3 text-sm">
+                                            <div>
+                                                <p class="text-xs font-bold text-gray-400 uppercase mb-1">Perbaikan Kode Anda:</p>
+                                                <pre class="p-3 rounded-xl bg-gray-900 {{ $isCorrect ? 'text-green-400' : 'text-red-400' }} font-mono text-xs overflow-x-auto">{{ $textAnswer ?: '// Tidak menjawab' }}</pre>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs font-bold text-emerald-500 uppercase mb-1">Kunci Solusi Benar:</p>
+                                                <pre class="p-3 rounded-xl bg-gray-900 text-green-400 font-mono text-xs overflow-x-auto">{{ $question->correct_answer }}</pre>
+                                            </div>
+                                        </div>
+
+                                    <!-- Render Interactive Video -->
+                                    @elseif($question->question_type === 'interactive_video')
+                                        @php
+                                            $videoQType = $question->options['video_question_type'] ?? 'multiple_choice';
+                                        @endphp
+                                        <div class="space-y-3">
+                                            <div class="p-3 bg-purple-50 rounded-xl text-xs text-purple-700">
+                                                Pop-up Kuis Video pada detik ke-<strong>{{ $question->options['timestamp'] ?? 0 }}</strong>
+                                            </div>
+                                            
+                                            @if($videoQType === 'multiple_choice')
+                                                <div class="space-y-2">
+                                                    @foreach(($question->options['options'] ?? []) as $key => $text)
+                                                        @php
+                                                            $isSelected = $selected === $key;
+                                                            $isRealCorrect = $question->correct_answer === $key;
+                                                            
+                                                            if ($isRealCorrect) {
+                                                                $bgClass = 'bg-emerald-100 border-emerald-300 text-emerald-800';
+                                                            } elseif ($isSelected && !$isCorrect) {
+                                                                $bgClass = 'bg-red-100 border-red-300 text-red-800';
+                                                            } else {
+                                                                $bgClass = 'bg-white border-gray-200 text-gray-500';
+                                                            }
+                                                        @endphp
+                                                        <div class="flex items-center p-3 rounded-xl border {{ $bgClass }} text-sm">
+                                                            <span class="w-6 h-6 flex flex-shrink-0 items-center justify-center rounded text-xs font-bold mr-3 @if($isRealCorrect) bg-emerald-500 text-white @elseif($isSelected) bg-red-500 text-white @else bg-gray-100 text-gray-400 @endif">{{ $key }}</span>
+                                                            <span class="font-bold">{{ $text }}</span>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            @elseif($videoQType === 'true_false')
+                                                <div class="space-y-2">
+                                                    <div class="p-3 rounded-xl border {{ $selected === 'A' ? ($isCorrect ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800') : 'bg-white text-gray-500' }} text-sm font-bold">
+                                                        Jawaban Anda: {{ $selected === 'A' ? 'Benar' : 'Salah' }}
+                                                    </div>
+                                                    <div class="p-3 rounded-xl border bg-emerald-50 text-emerald-800 text-sm font-bold">
+                                                        Jawaban Kunci: {{ $question->correct_answer === 'A' ? 'Benar' : 'Salah' }}
+                                                    </div>
+                                                </div>
+                                            @else
+                                                <div class="space-y-2 text-sm">
+                                                    <div class="p-3 rounded-xl border bg-white flex items-center">
+                                                        <span class="font-bold mr-2 text-gray-500">Jawaban Anda:</span>
+                                                        <span class="font-mono font-bold {{ $isCorrect ? 'text-emerald-600' : 'text-red-600' }}">{{ $textAnswer ?: '(Kosong)' }}</span>
+                                                    </div>
+                                                    <div class="p-3 rounded-xl border bg-emerald-50 border-emerald-250 flex items-center">
+                                                        <span class="font-bold mr-2 text-emerald-800">Jawaban Benar:</span>
+                                                        <span class="font-mono font-bold text-emerald-800">{{ $question->correct_answer }}</span>
+                                                    </div>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endif
+                                    
+                                    @if($question->feedback)
+                                        <div class="p-3 bg-yellow-50/50 rounded-xl border border-yellow-100 text-xs text-yellow-800 mt-4 leading-relaxed">
+                                            <strong>Pembahasan:</strong> {{ $question->feedback }}
+                                        </div>
                                     @endif
                                 </div>
                             </div>

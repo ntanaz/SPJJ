@@ -28,6 +28,14 @@
                     </div>
 
                     <div>
+                        <label for="module_id" class="block text-sm font-bold text-gray-700 mb-2">Pilih Bab / Modul</label>
+                        <select id="module_id" name="module_id" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-colors" required>
+                            <option value="">Pilih Bab...</option>
+                        </select>
+                        @error('module_id')<p class="mt-1 text-sm text-red-600 font-medium">{{ $message }}</p>@enderror
+                    </div>
+
+                    <div>
                         <label for="format" class="block text-sm font-bold text-gray-700 mb-2">Format Materi</label>
                         <select id="format" name="format" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-colors" required onchange="toggleFormatFields(this.value)">
                             <option value="document">Dokumen / File (PDF, DOCX, PPTX, Image)</option>
@@ -130,4 +138,46 @@
             </form>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const courseSelect = document.getElementById('course_id');
+            const moduleSelect = document.getElementById('module_id');
+            const courseModules = {!! json_encode($courses->mapWithKeys(fn($c) => [$c->id => $c->modules])) !!};
+
+            // Parse query params if any
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlCourseId = urlParams.get('course_id');
+            const urlModuleId = urlParams.get('module_id');
+
+            function updateModules(courseId, selectedModuleId = null) {
+                moduleSelect.innerHTML = '<option value="">Pilih Bab...</option>';
+                if (!courseId || !courseModules[courseId]) return;
+
+                courseModules[courseId].forEach(mod => {
+                    const opt = document.createElement('option');
+                    opt.value = mod.id;
+                    opt.textContent = mod.title;
+                    if (selectedModuleId && Number(mod.id) === Number(selectedModuleId)) {
+                        opt.selected = true;
+                    } else if (Number(mod.id) === Number('{{ old('module_id') }}')) {
+                        opt.selected = true;
+                    }
+                    moduleSelect.appendChild(opt);
+                });
+            }
+
+            courseSelect.addEventListener('change', function () {
+                updateModules(this.value);
+            });
+
+            // Initial load check
+            if (urlCourseId) {
+                courseSelect.value = urlCourseId;
+                updateModules(urlCourseId, urlModuleId);
+            } else if (courseSelect.value) {
+                updateModules(courseSelect.value, '{{ old('module_id') }}');
+            }
+        });
+    </script>
 </x-app-layout>

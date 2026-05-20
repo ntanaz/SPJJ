@@ -36,7 +36,7 @@ class LearningResourceController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'file' => 'required|file|mimes:pdf,doc,docx,ppt,pptx,jpg,jpeg,png|max:10240', // max 10MB
+            'file' => 'required|file|mimes:pdf,doc,docx,ppt,pptx,jpg,jpeg,png,zip|max:102400', // max 100MB
             'category' => 'nullable|string',
         ]);
 

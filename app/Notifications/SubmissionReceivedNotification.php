@@ -42,7 +42,7 @@ class SubmissionReceivedNotification extends Notification
             'type' => 'submission',
             'title' => 'Pengumpulan Baru: ' . $this->submission->assignment->title,
             'message' => $this->submission->user->name . ' telah mengumpulkan tugas.',
-            'url' => route('assignments.submissions', $this->submission->assignment_id),
+            'url' => route('teacher.assignments.submissions', $this->submission->assignment_id),
             'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
             'color' => 'emerald'
         ];

@@ -14,10 +14,13 @@ class DiscussionReplyController extends Controller
             'content' => 'required|string|max:2000'
         ]);
 
-        $discussion->replies()->create([
+        $reply = $discussion->replies()->create([
             'user_id' => auth()->id(),
             'content' => $request->content
         ]);
+
+        // Award XP using XpService
+        \App\Services\XpService::addXp(auth()->user(), 'discussion_reply', $discussion->module_id, 'DiscussionReply', $reply->id);
 
         return back()->with('success', 'Tanggapan berhasil dikirim.');
     }

@@ -78,4 +78,19 @@ class User extends Authenticatable
     {
         return $this->hasMany(Discussion::class);
     }
+
+    public function studentXp()
+    {
+        return $this->hasOne(StudentXp::class);
+    }
+
+    public function xpLogs()
+    {
+        return $this->hasMany(XpLog::class);
+    }
+
+    public function studentProgress()
+    {
+        return $this->hasMany(StudentProgress::class);
+    }
 }

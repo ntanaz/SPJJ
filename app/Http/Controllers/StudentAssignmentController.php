@@ -25,7 +25,7 @@ class StudentAssignmentController extends Controller
     {
         $request->validate([
             'text_content' => 'nullable|string',
-            'files.*' => 'nullable|file|mimes:pdf,doc,docx,zip,jpeg,png,jpg|max:10240', // max 10MB per file
+            'files.*' => 'nullable|file|mimes:pdf,doc,docx,zip,jpeg,png,jpg,mp4,mov,avi,webm|max:51200', // max 50MB per file
         ]);
 
         if (!$request->filled('text_content') && !$request->hasFile('files')) {
@@ -67,6 +67,9 @@ class StudentAssignmentController extends Controller
                 'file_path' => count($attachments) > 0 ? $attachments[0]['path'] : null,
             ]
         );
+
+        // Award XP using XpService
+        \App\Services\XpService::addXp(auth()->user(), 'assignment', $assignment->module_id, 'Submission', $submissionRecord->id);
 
         // Notify teacher
         $assignment->load('course.classes.teacher');

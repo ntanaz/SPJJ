@@ -120,31 +120,122 @@
         @role('siswa')
         <!-- Siswa Dashboard -->
         
-        <!-- Welcome Banner -->
-        <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-fuchsia-500 rounded-3xl p-8 mb-8 text-white shadow-xl relative overflow-hidden">
-            <div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-white opacity-5"></div>
-            <div class="absolute bottom-0 left-0 -ml-16 -mb-16 w-48 h-48 rounded-full bg-white opacity-5"></div>
-            
-            <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between">
-                <div>
-                    <span class="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold uppercase tracking-wider mb-3">Progress Kelas Anda</span>
-                    <h3 class="text-3xl font-extrabold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-100">Lanjutkan Belajar Anda!</h3>
-                    <div class="mt-4 w-full max-w-md">
-                        <div class="flex justify-between items-center text-xs font-bold text-indigo-100 mb-1">
-                            <span>Progress Total</span>
-                            <span>{{ $progress ?? 0 }}%</span>
-                        </div>
-                        <div class="w-full bg-white/20 rounded-full h-2">
-                            <div class="bg-gradient-to-r from-green-300 to-emerald-400 h-2 rounded-full" style="width: {{ $progress ?? 0 }}%"></div>
-                        </div>
+        <!-- Siswa Progress & Gamification Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Glassmorphic Welcome Banner & Overall Progress -->
+            <div class="lg:col-span-2 bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden flex flex-col justify-between">
+                <!-- Background decorative elements -->
+                <div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-white opacity-5 pointer-events-none"></div>
+                <div class="absolute bottom-0 left-0 -ml-16 -mb-16 w-48 h-48 rounded-full bg-white opacity-5 pointer-events-none"></div>
+                
+                <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between">
+                    <div>
+                        <span class="inline-block px-3.5 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-black uppercase tracking-wider mb-4 border border-white/10 shadow-sm">
+                            Dashboard Siswa
+                        </span>
+                        <h3 class="text-3xl font-extrabold mb-2 leading-tight">
+                            Lanjutkan Belajar Anda, {{ explode(' ', Auth::user()->name)[0] }}! 👋
+                        </h3>
+                        <p class="text-indigo-100 text-sm font-medium mb-6">
+                            Terus selesaikan aktivitas pembelajaran untuk mengumpulkan XP dan meraih peringkat tertinggi!
+                        </p>
+                    </div>
+                    
+                    <!-- Dynamic Badge Tier Display -->
+                    <div class="mt-4 md:mt-0 flex flex-col items-center bg-white/10 backdrop-blur-md px-5 py-4 rounded-2xl border border-white/20 shadow-lg text-center min-w-[140px] transform hover:scale-105 transition-transform duration-300">
+                        <span class="text-4xl mb-1 filter drop-shadow">{{ $badgeIcon }}</span>
+                        <span class="text-xs font-bold text-indigo-200 uppercase tracking-widest">Peringkat</span>
+                        <span class="text-base font-black text-white mt-0.5">{{ $badge }}</span>
                     </div>
                 </div>
-                <div class="mt-6 md:mt-0 flex flex-col items-center">
-                    <div class="w-24 h-24 bg-gradient-to-br from-yellow-300 to-yellow-500 rounded-full flex items-center justify-center border-4 border-white/20 shadow-inner">
-                        <svg class="w-12 h-12 text-yellow-50" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732l-3.354 1.935-1.18 4.455a1 1 0 01-1.933 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732l3.354-1.935 1.18-4.455A1 1 0 0112 2z" clip-rule="evenodd" /></svg>
+
+                <!-- Overall Progress Bar -->
+                <div class="relative z-10 mt-6 pt-4 border-t border-white/10 w-full">
+                    <div class="flex justify-between items-center text-xs font-bold text-indigo-100 mb-1.5">
+                        <span class="flex items-center gap-1.5">
+                            <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                            Progres Belajar Keseluruhan
+                        </span>
+                        <span class="bg-white/20 px-2 py-0.5 rounded text-[11px] font-black">{{ $overallProgress }}%</span>
+                    </div>
+                    <div class="w-full bg-white/10 rounded-full h-3.5 p-0.5 border border-white/10 shadow-inner">
+                        <div class="bg-gradient-to-r from-emerald-400 via-teal-300 to-green-400 h-2 rounded-full transition-all duration-1000 shadow-md" style="width: {{ $overallProgress }}%"></div>
                     </div>
                 </div>
             </div>
+
+            <!-- Gamification Points & Activity Card -->
+            <div class="bg-white rounded-3xl p-6 shadow-md border border-gray-100 flex flex-col justify-between">
+                <div>
+                    <h4 class="text-gray-800 font-black text-lg mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                        Ringkasan Poin & Progress
+                    </h4>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <!-- Total XP Card -->
+                        <div class="bg-yellow-50/50 rounded-2xl p-4 border border-yellow-100 flex flex-col justify-between">
+                            <span class="text-xs font-bold text-yellow-700 uppercase">Total XP</span>
+                            <div class="flex items-baseline gap-1 mt-2">
+                                <span class="text-3xl font-black text-yellow-600">{{ $totalXp }}</span>
+                                <span class="text-xs font-bold text-yellow-500">XP</span>
+                            </div>
+                        </div>
+
+                        <!-- Completed Activities Card -->
+                        <div class="bg-emerald-50/50 rounded-2xl p-4 border border-emerald-100 flex flex-col justify-between">
+                            <span class="text-xs font-bold text-emerald-700 uppercase">Aktivitas Selesai</span>
+                            <div class="flex items-baseline gap-1 mt-2">
+                                <span class="text-3xl font-black text-emerald-600">{{ $completedActivitiesCount }}</span>
+                                <span class="text-xs font-bold text-emerald-500">Aktivitas</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Next Tier Info -->
+                <div class="bg-gray-50 rounded-2xl p-3.5 border border-gray-100 text-xs font-medium text-gray-600 flex items-center justify-between">
+                    @if($totalXp < 100)
+                        <span>Kumpulkan <b>{{ 100 - $totalXp }} XP</b> lagi untuk naik ke tier 🚀 <b>Penjelajah</b>!</span>
+                    @elseif($totalXp < 300)
+                        <span>Kumpulkan <b>{{ 300 - $totalXp }} XP</b> lagi untuk naik ke tier 🧠 <b>Cendekiawan</b>!</span>
+                    @elseif($totalXp < 600)
+                        <span>Kumpulkan <b>{{ 600 - $totalXp }} XP</b> lagi untuk naik ke tier 🏆 <b>Zenith Master</b>!</span>
+                    @else
+                        <span>Selamat! Anda berada di tingkat tertinggi 🏆 <b>Zenith Master</b>!</span>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Per BAB (Module) -->
+        <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 mb-8">
+            <h3 class="text-lg font-black text-gray-800 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                Progres Belajar per BAB (Modul)
+            </h3>
+            
+            @if(isset($modulesProgress) && $modulesProgress->count() > 0)
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    @foreach($modulesProgress as $modProgress)
+                        <div class="p-4 bg-gray-50/50 hover:bg-gray-50 border border-gray-100 rounded-2xl transition-all duration-300 transform hover:-translate-y-0.5 flex flex-col justify-between">
+                            <div class="flex justify-between items-start gap-4 mb-2">
+                                <h4 class="font-bold text-gray-800 text-sm line-clamp-1">{{ $modProgress['title'] }}</h4>
+                                <span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 font-extrabold text-[10px] rounded-full border border-indigo-100">
+                                    {{ $modProgress['percentage'] }}% Selesai
+                                </span>
+                            </div>
+                            <div class="w-full bg-gray-200/70 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-indigo-500 to-indigo-600 h-2 rounded-full transition-all duration-500" style="width: {{ $modProgress['percentage'] }}%"></div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="text-center py-6 bg-gray-50 rounded-2xl border border-gray-100 border-dashed">
+                    <p class="text-gray-500 text-sm font-medium">Belum ada modul terdaftar atau progres kelas.</p>
+                </div>
+            @endif
         </div>
 
         @if(isset($upcomingAssignments) && $upcomingAssignments->count() > 0)

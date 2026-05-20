@@ -594,15 +594,39 @@
                     player:               null,
                     localVideo:           null,
                     watchLogInterval:     null,
+                    supposedCurrentTime:  {{ $videoLog ? $videoLog->watched_duration : 0 }},
 
                     init() {
                         const self = this;
                         const localEl = document.getElementById('local-player');
                         if (localEl) {
                             self.localVideo = localEl;
+
+                            // Resume watching position if saved
+                            if (self.supposedCurrentTime > 0) {
+                                self.localVideo.currentTime = self.supposedCurrentTime;
+                            }
+
+                            // Keep track of watched duration to block fast-forward
                             self.localVideo.addEventListener('timeupdate', () => {
                                 self.checkVideoTime(self.localVideo.currentTime);
+                                if (!self.localVideo.seeking) {
+                                    if (self.localVideo.currentTime > self.supposedCurrentTime) {
+                                        if (self.localVideo.currentTime - self.supposedCurrentTime < 2) {
+                                            self.supposedCurrentTime = self.localVideo.currentTime;
+                                        }
+                                    }
+                                }
                             });
+
+                            // Prevent forward skipping
+                            self.localVideo.addEventListener('seeking', () => {
+                                let delta = self.localVideo.currentTime - self.supposedCurrentTime;
+                                if (delta > 2) {
+                                    self.localVideo.currentTime = self.supposedCurrentTime;
+                                }
+                            });
+
                             self.localVideo.addEventListener('ended', () => {
                                 self.sendProgressLog(true);
                             });
@@ -631,6 +655,9 @@
                         const self = this;
                         self.player = new YT.Player('yt-player', {
                             videoId: '{{ $youtubeId }}',
+                            playerVars: {
+                                start: Math.floor(self.supposedCurrentTime)
+                            },
                             events: {
                                 onStateChange: (event) => {
                                     if (event.data === YT.PlayerState.PLAYING) self.startTimer();
@@ -644,7 +671,18 @@
                         const self = this;
                         self.checkInterval = setInterval(() => {
                             if (self.player && typeof self.player.getCurrentTime === 'function') {
-                                self.checkVideoTime(Math.floor(self.player.getCurrentTime()));
+                                const currentTime = self.player.getCurrentTime();
+                                
+                                // Prevent forward skipping on YouTube
+                                if (currentTime > self.supposedCurrentTime) {
+                                    if (currentTime - self.supposedCurrentTime > 2) {
+                                        self.player.seekTo(self.supposedCurrentTime, true);
+                                    } else {
+                                        self.supposedCurrentTime = currentTime;
+                                    }
+                                }
+
+                                self.checkVideoTime(Math.floor(currentTime));
                             }
                         }, 500);
                     },

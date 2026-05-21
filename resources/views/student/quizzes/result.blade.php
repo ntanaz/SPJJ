@@ -21,7 +21,7 @@
 
         <div class="bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100">
             <!-- Score Overview -->
-            <div class="bg-gradient-to-r {{ $attempt->score >= 75 ? 'from-emerald-500 to-teal-600' : 'from-amber-500 to-orange-500' }} p-12 text-center text-white relative">
+            <div class="bg-gradient-to-r {{ $attempt->score >= 75 ? 'from-emerald-500 to-teal-600' : 'from-indigo-600 to-purple-600' }} p-12 text-center text-white relative">
                 <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
                 <div class="relative z-10">
                     <span class="text-sm font-bold uppercase tracking-widest text-white/80 mb-4 inline-block">Nilai Akhir Ujian</span>

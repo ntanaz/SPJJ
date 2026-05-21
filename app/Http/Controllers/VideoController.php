@@ -24,6 +24,7 @@ class VideoController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'video_file' => 'required|file|mimes:mp4,mov,avi,webm|max:512000', // Max 500MB
+            'description' => 'nullable|string',
         ]);
 
         $path = $request->file('video_file')->store('materials/videos', 'public');
@@ -33,6 +34,7 @@ class VideoController extends Controller
             'title' => $request->title,
             'video_path' => $path,
             'duration' => 0,
+            'description' => $request->description,
         ]);
 
         return redirect()->route('videos.manage', $video)->with('success', '🎬 Video pembelajaran berhasil dibuat. Silakan tambahkan pertanyaan kuis interaktif.');
@@ -44,7 +46,31 @@ class VideoController extends Controller
     public function manage(Video $video)
     {
         $video->load(['quizzes.options', 'module.course']);
-        return view('videos.manage', compact('video'));
+        
+        $attempts = \App\Models\VideoQuizAttempt::whereIn('video_quiz_id', $video->quizzes->pluck('id'))
+            ->with(['user', 'quiz'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+            
+        return view('videos.manage', compact('video', 'attempts'));
+    }
+
+    /**
+     * Update the video resource details (Title & Description).
+     */
+    public function update(Video $video, Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+
+        $video->update([
+            'title' => $request->title,
+            'description' => $request->description,
+        ]);
+
+        return back()->with('success', '🎬 Detail video pembelajaran berhasil diperbarui.');
     }
 
     /**
@@ -182,6 +208,9 @@ class VideoController extends Controller
 
         $userId = Auth::id();
 
+        $existing = VideoActivityLog::where('user_id', $userId)->where('video_id', $video->id)->first();
+        $wasCompleted = $existing ? (bool) $existing->completed : false;
+
         $log = VideoActivityLog::updateOrCreate(
             ['user_id' => $userId, 'video_id' => $video->id],
             [
@@ -191,7 +220,6 @@ class VideoController extends Controller
         );
 
         // If completed just now and it wasn't completed before, award completion
-        $wasCompleted = $log->completed;
         if ($request->completed && !$wasCompleted) {
             $log->update(['completed' => true]);
             
@@ -260,6 +288,14 @@ class VideoController extends Controller
             'answered_at' => now()->toDateTimeString(),
         ];
         $log->update(['answered_quiz' => $answered]);
+
+        // Save to dedicated attempts table
+        \App\Models\VideoQuizAttempt::create([
+            'user_id' => $userId,
+            'video_quiz_id' => $quiz->id,
+            'answer' => $userAnswer,
+            'is_correct' => $isCorrect,
+        ]);
 
         // Award XP if correct and not already awarded
         if ($isCorrect && !$alreadyCorrect && Auth::user()->hasRole('siswa')) {

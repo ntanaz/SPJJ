@@ -14,36 +14,37 @@
         questionType: '{{ session('error_edit_question_id') ? 'multiple_choice' : (old('question_type') ?: 'multiple_choice') }}', 
         videoQType: '{{ session('error_edit_question_id') ? 'multiple_choice' : (old('video_question_type') ?: 'multiple_choice') }}', 
         showEditModal: {{ session('error_edit_question_id') ? 'true' : 'false' }}, 
+        showPreviewModal: false,
         editQuestion: { 
             id: {{ session('error_edit_question_id') ? (int) session('error_edit_question_id') : 'null' }}, 
-            question_type: {!! json_encode(session('error_edit_question_id') ? old('question_type', 'multiple_choice') : 'multiple_choice') !!}, 
-            question: {!! json_encode(session('error_edit_question_id') ? old('question', '') : '') !!}, 
+            question_type: {{ json_encode(session('error_edit_question_id') ? old('question_type', 'multiple_choice') : 'multiple_choice') }}, 
+            question: {{ json_encode(session('error_edit_question_id') ? old('question', '') : '') }}, 
             points: {{ (int) (session('error_edit_question_id') ? (old('points') ?: 10) : 10) }}, 
-            feedback: {!! json_encode(session('error_edit_question_id') ? old('feedback', '') : '') !!}, 
-            correct_answer: {!! json_encode(session('error_edit_question_id') ? old('correct_answer', '') : '') !!}, 
+            feedback: {{ json_encode(session('error_edit_question_id') ? old('feedback', '') : '') }}, 
+            correct_answer: {{ json_encode(session('error_edit_question_id') ? old('correct_answer', '') : '') }}, 
             options: { 
-                A: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'multiple_choice') ? old('option_a', '') : '') !!}, 
-                B: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'multiple_choice') ? old('option_b', '') : '') !!}, 
-                C: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'multiple_choice') ? old('option_c', '') : '') !!}, 
-                D: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'multiple_choice') ? old('option_d', '') : '') !!} 
+                A: {{ json_encode((session('error_edit_question_id') && old('question_type') === 'multiple_choice') ? old('option_a', '') : '') }}, 
+                B: {{ json_encode((session('error_edit_question_id') && old('question_type') === 'multiple_choice') ? old('option_b', '') : '') }}, 
+                C: {{ json_encode((session('error_edit_question_id') && old('question_type') === 'multiple_choice') ? old('option_c', '') : '') }}, 
+                D: {{ json_encode((session('error_edit_question_id') && old('question_type') === 'multiple_choice') ? old('option_d', '') : '') }} 
             }, 
-            video_url: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'interactive_video') ? old('video_url', '') : '') !!}, 
-            timestamp: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'interactive_video') ? old('timestamp', '') : '') !!}, 
-            video_question_type: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'interactive_video') ? old('video_question_type', 'multiple_choice') : 'multiple_choice') !!}, 
+            video_url: {{ json_encode((session('error_edit_question_id') && old('question_type') === 'interactive_video') ? old('video_url', '') : '') }}, 
+            timestamp: {{ json_encode((session('error_edit_question_id') && old('question_type') === 'interactive_video') ? old('timestamp', '') : '') }}, 
+            video_question_type: {{ json_encode((session('error_edit_question_id') && old('question_type') === 'interactive_video') ? old('video_question_type', 'multiple_choice') : 'multiple_choice') }}, 
             video_options: { 
-                A: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'interactive_video' && old('video_question_type') === 'multiple_choice') ? old('option_a', '') : '') !!}, 
-                B: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'interactive_video' && old('video_question_type') === 'multiple_choice') ? old('option_b', '') : '') !!}, 
-                C: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'interactive_video' && old('video_question_type') === 'multiple_choice') ? old('option_c', '') : '') !!}, 
-                D: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'interactive_video' && old('video_question_type') === 'multiple_choice') ? old('option_d', '') : '') !!} 
+                A: {{ json_encode((session('error_edit_question_id') && old('question_type') === 'interactive_video' && old('video_question_type') === 'multiple_choice') ? old('option_a', '') : '') }}, 
+                B: {{ json_encode((session('error_edit_question_id') && old('question_type') === 'interactive_video' && old('video_question_type') === 'multiple_choice') ? old('option_b', '') : '') }}, 
+                C: {{ json_encode((session('error_edit_question_id') && old('question_type') === 'interactive_video' && old('video_question_type') === 'multiple_choice') ? old('option_c', '') : '') }}, 
+                D: {{ json_encode((session('error_edit_question_id') && old('question_type') === 'interactive_video' && old('video_question_type') === 'multiple_choice') ? old('option_d', '') : '') }} 
             },
-            keywords: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'short_answer') ? old('keywords', '') : '') !!},
-            code_template: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'fill_blank') ? old('code_template', '') : '') !!},
-            blank_placeholder: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'fill_blank') ? old('blank_placeholder', '[blank]') : '[blank]') !!},
-            feedback_correct: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'fill_blank') ? old('feedback_correct', '') : '') !!},
-            feedback_incorrect: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'fill_blank') ? old('feedback_incorrect', '') : '') !!},
+            keywords: {{ json_encode((session('error_edit_question_id') && old('question_type') === 'short_answer') ? old('keywords', '') : '') }},
+            code_template: {{ json_encode((session('error_edit_question_id') && old('question_type') === 'fill_blank') ? old('code_template', '') : '') }},
+            blank_placeholder: {{ json_encode((session('error_edit_question_id') && old('question_type') === 'fill_blank') ? old('blank_placeholder', '[blank]') : '[blank]') }},
+            feedback_correct: {{ json_encode((session('error_edit_question_id') && old('question_type') === 'fill_blank') ? old('feedback_correct', '') : '') }},
+            feedback_incorrect: {{ json_encode((session('error_edit_question_id') && old('question_type') === 'fill_blank') ? old('feedback_incorrect', '') : '') }},
             max_attempts: {{ (int) ((session('error_edit_question_id') && old('question_type') === 'fill_blank') ? (old('max_attempts') ?: 3) : 3) }},
-            code_snippet: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'debugging') ? old('code_snippet', '') : '') !!},
-            bug_description: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'debugging') ? old('bug_description', '') : '') !!}
+            code_snippet: {{ json_encode((session('error_edit_question_id') && old('question_type') === 'debugging') ? old('code_snippet', '') : '') }},
+            bug_description: {{ json_encode((session('error_edit_question_id') && old('question_type') === 'debugging') ? old('bug_description', '') : '') }}
         } 
     }">
         <!-- Error / Validasi -->
@@ -343,9 +344,17 @@
                         <span class="text-indigo-200 font-bold uppercase tracking-widest text-xs">Total Soal</span>
                         <h3 class="text-4xl font-black mt-1">{{ $quiz->questions->count() }} <span class="text-lg font-medium text-indigo-200">Butir</span></h3>
                     </div>
-                    <div class="relative z-10 text-right">
-                        <p class="text-sm text-indigo-100 font-medium">Beban Skor Maksimal:</p>
-                        <p class="text-2xl font-black">{{ $quiz->questions->sum('points') }} Poin</p>
+                    <div class="relative z-10 text-right flex flex-col sm:flex-row items-center gap-4">
+                        <div class="text-right">
+                            <p class="text-sm text-indigo-100 font-medium">Beban Skor Maksimal:</p>
+                            <p class="text-2xl font-black">{{ $quiz->questions->sum('points') }} Poin</p>
+                        </div>
+                        @if($quiz->questions->count() > 0)
+                            <button type="button" @click="showPreviewModal = true" class="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-indigo-700 hover:bg-indigo-50 rounded-2xl text-sm font-bold shadow-md hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-indigo-300 transform hover:-translate-y-0.5 active:scale-95 duration-200">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                Pratinjau Kuis (Siswa)
+                            </button>
+                        @endif
                     </div>
                 </div>
 
@@ -816,5 +825,306 @@
                 </form>
             </div>
         </div>
+    </div>
+
+    <!-- Modal Pratinjau Kuis -->
+    <div x-show="showPreviewModal" 
+         class="fixed inset-0 z-50 overflow-y-auto" 
+         style="display: none;" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         x-data="{ 
+             previewAnswers: {}, 
+             previewChecked: {}, 
+             showFeedback: {},
+             checkAnswer(qId, type, correct, keywords = '') {
+                 this.previewChecked[qId] = true;
+                 let ans = this.previewAnswers[qId];
+                 if (ans === undefined || ans === null || String(ans).trim() === '') {
+                     this.showFeedback[qId] = { isCorrect: false, text: 'Harap isi atau pilih jawaban Anda terlebih dahulu!' };
+                     return;
+                 }
+                 
+                 let strAns = String(ans);
+                 if (type === 'multiple_choice' || type === 'true_false') {
+                     if (strAns === correct) {
+                         this.showFeedback[qId] = { isCorrect: true, text: 'Luar biasa! Pilihan Anda tepat.' };
+                     } else {
+                         this.showFeedback[qId] = { isCorrect: false, text: 'Jawaban kurang tepat. Kunci jawaban: ' + correct };
+                     }
+                 } else if (type === 'short_answer') {
+                     let cleanAns = strAns.toLowerCase().trim();
+                     let cleanCorrect = correct.toLowerCase().trim();
+                     let match = cleanAns === cleanCorrect;
+                     if (!match && keywords) {
+                         let kwList = keywords.split(',').map(k => k.trim().toLowerCase());
+                         match = kwList.some(k => k && cleanAns.includes(k));
+                     }
+                     if (match) {
+                         this.showFeedback[qId] = { isCorrect: true, text: 'Hebat! Jawaban Anda sesuai.' };
+                     } else {
+                         this.showFeedback[qId] = { isCorrect: false, text: 'Kurang tepat. Kunci jawaban: ' + correct };
+                     }
+                 } else if (type === 'fill_blank') {
+                     if (strAns.toLowerCase().trim() === correct.toLowerCase().trim()) {
+                         this.showFeedback[qId] = { isCorrect: true, text: 'Luar biasa! Kode Anda bekerja dengan sempurna.' };
+                     } else {
+                         this.showFeedback[qId] = { isCorrect: false, text: 'Kurang tepat. Isian yang benar: ' + correct };
+                     }
+                 } else if (type === 'debugging') {
+                     let cleanAns = strAns.replace(/\s+/g, '').toLowerCase();
+                     let cleanCorrect = correct.replace(/\s+/g, '').toLowerCase();
+                     if (cleanAns === cleanCorrect) {
+                         this.showFeedback[qId] = { isCorrect: true, text: 'Selamat! Anda berhasil menemukan dan memperbaiki bug.' };
+                     } else {
+                         this.showFeedback[qId] = { isCorrect: false, text: 'Perbaikan kurang tepat. Periksa kembali logika kode Anda!' };
+                     }
+                 } else if (type === 'reflection') {
+                     this.showFeedback[qId] = { isCorrect: true, text: '✓ Refleksi Diterima! Pendapat/refleksi Anda telah disimpan secara interaktif.' };
+                 }
+             }
+         }">
+        
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-gray-900 bg-opacity-80 backdrop-blur-sm transition-opacity" @click="showPreviewModal = false"></div>
+
+        <!-- Modal Content -->
+        <div class="flex min-h-screen items-center justify-center p-4 text-center sm:p-6">
+            <div class="relative transform overflow-hidden rounded-3xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-4xl p-6 sm:p-8 space-y-6 flex flex-col max-h-[90vh]"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
+                
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between border-b border-gray-150 pb-4 flex-shrink-0">
+                    <div>
+                        <h3 class="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-3">
+                            <svg class="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                            Pratinjau Kuis (Tampilan Siswa)
+                        </h3>
+                        <p class="text-sm text-gray-500 font-medium mt-1">Uji interaktif seluruh tipe pertanyaan kuis secara instan.</p>
+                    </div>
+                    <button type="button" @click="showPreviewModal = false" class="text-gray-400 hover:text-gray-650 hover:bg-gray-100 p-2 rounded-xl transition-all">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+
+                <!-- Modal Body (Scrollable Questions) -->
+                <div class="flex-grow overflow-y-auto pr-2 space-y-8 py-4">
+                    @foreach($quiz->questions as $index => $question)
+                        <div class="relative pl-0 sm:pl-16 border-2 border-gray-100 p-6 rounded-2xl bg-white hover:border-indigo-150 transition-all duration-200 shadow-sm" x-data="{ localVideoPaused: false, localVideoAnswered: false, localVideoTime: 0 }">
+                            <!-- Number Indicator -->
+                            <div class="hidden sm:flex absolute left-4 top-6 w-10 h-10 bg-indigo-100 text-indigo-700 rounded-full font-black text-lg items-center justify-center border border-indigo-200">
+                                {{ $index + 1 }}
+                            </div>
+                            
+                            <div class="flex items-center gap-2 mb-3 flex-wrap">
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 uppercase tracking-wider">
+                                    {{ str_replace('_', ' ', $question->question_type) }}
+                                </span>
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 tracking-wider">
+                                    {{ $question->points }} Poin
+                                </span>
+                            </div>
+
+                            <!-- Question Text -->
+                            <h4 class="text-lg font-bold text-gray-800 leading-relaxed mb-5">{{ $question->question }}</h4>
+
+                            <!-- 1. Multiple Choice -->
+                            @if($question->question_type === 'multiple_choice')
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    @foreach($question->options as $key => $option)
+                                        <label class="group relative flex cursor-pointer rounded-xl border-2 border-gray-200 bg-white p-4 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all">
+                                            <div class="flex w-full items-center justify-between">
+                                                <div class="flex items-center gap-3">
+                                                    <input type="radio" x-model="previewAnswers[{{ $question->id }}]" value="{{ $key }}" class="h-5 w-5 border-2 border-gray-300 text-indigo-600 focus:ring-indigo-500 rounded-full bg-white checked:border-indigo-500 checked:bg-indigo-500 transition-colors">
+                                                    <div class="text-sm font-semibold text-gray-800">
+                                                        <span class="mr-1.5 inline-block px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded-md text-[10px] font-bold">{{ $key }}</span>
+                                                        {{ $option }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    @endforeach
+                                </div>
+
+                            <!-- 2. True / False -->
+                            @elseif($question->question_type === 'true_false')
+                                <div class="flex gap-4">
+                                    <label class="group relative flex cursor-pointer rounded-xl border-2 border-gray-200 bg-white px-6 py-4 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all">
+                                        <input type="radio" x-model="previewAnswers[{{ $question->id }}]" value="A" class="h-5 w-5 mr-3 border-2 border-gray-300 text-indigo-600 focus:ring-indigo-500 rounded-full checked:bg-indigo-500 transition-colors">
+                                        <span class="text-sm font-semibold text-gray-800">Benar</span>
+                                    </label>
+                                    <label class="group relative flex cursor-pointer rounded-xl border-2 border-gray-200 bg-white px-6 py-4 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all">
+                                        <input type="radio" x-model="previewAnswers[{{ $question->id }}]" value="B" class="h-5 w-5 mr-3 border-2 border-gray-300 text-indigo-600 focus:ring-indigo-500 rounded-full checked:bg-indigo-500 transition-colors">
+                                        <span class="text-sm font-semibold text-gray-800">Salah</span>
+                                    </label>
+                                </div>
+
+                            <!-- 3. Short Answer -->
+                            @elseif($question->question_type === 'short_answer')
+                                <div class="w-full">
+                                    <input type="text" x-model="previewAnswers[{{ $question->id }}]" placeholder="Ketik jawaban singkat di sini..." class="w-full rounded-xl border-2 border-gray-200 px-4 py-3 focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm font-medium">
+                                </div>
+
+                            <!-- 4. Fill in the Blank -->
+                            @elseif($question->question_type === 'fill_blank')
+                                @php
+                                    $template = $question->options['code_template'] ?? '';
+                                    $placeholder = $question->options['blank_placeholder'] ?? '[blank]';
+                                    $inputHtml = '<input type="text" x-model="previewAnswers['.$question->id.']" placeholder="..." class="mx-1 px-3 py-1 bg-white border-2 border-indigo-300 rounded-lg text-indigo-900 font-mono text-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 outline-none w-40 inline-block">';
+                                    $escapedTemplate = e($template);
+                                    $renderedCode = str_replace(e($placeholder), $inputHtml, $escapedTemplate);
+                                @endphp
+                                <div class="w-full space-y-2">
+                                    <div class="p-4 bg-gray-900 text-yellow-300 rounded-xl font-mono text-sm overflow-x-auto leading-relaxed shadow-inner">
+                                        {!! nl2br($renderedCode) !!}
+                                    </div>
+                                    <div class="text-[10px] text-gray-400">
+                                        *Lengkapi bagian kosong pada potongan kode di atas
+                                    </div>
+                                </div>
+
+                            <!-- 5. Reflection -->
+                            @elseif($question->question_type === 'reflection')
+                                <div class="w-full">
+                                    <textarea x-model="previewAnswers[{{ $question->id }}]" rows="3" placeholder="Ketik refleksi atau pendapat bebas di sini..." class="w-full rounded-xl border-2 border-gray-200 px-4 py-3 focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm font-medium"></textarea>
+                                </div>
+
+                            <!-- 6. Debugging -->
+                            @elseif($question->question_type === 'debugging')
+                                <div class="w-full space-y-3">
+                                    @if(!empty($question->options['bug_description']))
+                                        <div class="p-3.5 bg-rose-50 border border-rose-100 rounded-xl text-rose-800 text-xs">
+                                            <strong>Deskripsi Masalah/Bug:</strong>
+                                            <p class="mt-0.5 font-medium">{{ $question->options['bug_description'] }}</p>
+                                        </div>
+                                    @endif
+                                    
+                                    @if(!empty($question->options['code_snippet']))
+                                        <div class="space-y-1">
+                                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Kode Bermasalah:</p>
+                                            <pre class="p-3 bg-gray-900 text-red-400 rounded-xl font-mono text-xs overflow-x-auto shadow-inner">{{ $question->options['code_snippet'] }}</pre>
+                                        </div>
+                                    @endif
+                                    
+                                    <div class="space-y-1.5">
+                                        <label class="block text-xs font-bold text-gray-700">Tulis Perbaikan Kode:</label>
+                                        <textarea x-model="previewAnswers[{{ $question->id }}]" rows="4" placeholder="Tulis kode pemrograman yang benar di sini..." class="w-full rounded-xl border-2 border-gray-200 bg-gray-900 text-green-400 font-mono text-xs px-4 py-3 focus:border-indigo-500 focus:ring focus:ring-indigo-200 shadow-inner"></textarea>
+                                    </div>
+                                </div>
+
+                            <!-- 7. Interactive Video -->
+                            @elseif($question->question_type === 'interactive_video')
+                                @php
+                                    $videoUrl = $question->options['video_url'] ?? '';
+                                    $timestamp = $question->options['timestamp'] ?? 0;
+                                    $videoQType = $question->options['video_question_type'] ?? 'multiple_choice';
+                                @endphp
+                                <div class="space-y-4">
+                                    <div class="relative rounded-xl overflow-hidden shadow-md bg-black max-w-xl mx-auto">
+                                        <video id="preview-video-{{ $question->id }}" class="w-full max-h-[300px]" controls
+                                               @timeupdate="localVideoTime = $el.currentTime; if (localVideoTime >= {{ $timestamp }} && !localVideoAnswered) { $el.pause(); localVideoPaused = true; }">
+                                            <source src="{{ $videoUrl }}" type="video/mp4">
+                                            Browser Anda tidak mendukung video tag.
+                                        </video>
+                                    </div>
+                                    
+                                    <div x-show="localVideoPaused" class="p-4 bg-purple-50 border border-purple-100 rounded-xl transition-all duration-300 max-w-xl mx-auto">
+                                        <p class="font-bold text-purple-900 text-xs mb-2.5 flex items-center gap-1.5">
+                                            <svg class="w-4 h-4 text-purple-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 5.25v13.5m-7.5-13.5v13.5" /></svg>
+                                            Video Berhenti Otomatis (Detik {{ $timestamp }}):
+                                        </p>
+                                        
+                                        <div class="bg-white p-3 rounded-lg border border-purple-100">
+                                            @if($videoQType === 'multiple_choice')
+                                                <div class="grid grid-cols-1 gap-2">
+                                                    @foreach(($question->options['options'] ?? []) as $key => $option)
+                                                        <label class="flex items-center gap-2 p-2 rounded-lg border border-gray-200 bg-white hover:bg-purple-50 cursor-pointer transition-colors text-xs font-semibold">
+                                                            <input type="radio" x-model="previewAnswers[{{ $question->id }}]" value="{{ $key }}" @change="localVideoAnswered = true; localVideoPaused = false; document.getElementById('preview-video-{{ $question->id }}').play()" class="text-indigo-600 focus:ring-indigo-500">
+                                                            <span>{{ $key }}. {{ $option }}</span>
+                                                        </label>
+                                                    @endforeach
+                                                </div>
+                                            @elseif($videoQType === 'true_false')
+                                                <div class="flex gap-3">
+                                                    <label class="flex items-center gap-2 cursor-pointer p-2 border border-gray-200 bg-white rounded-lg hover:bg-purple-50 transition-colors text-xs font-semibold">
+                                                        <input type="radio" x-model="previewAnswers[{{ $question->id }}]" value="A" @change="localVideoAnswered = true; localVideoPaused = false; document.getElementById('preview-video-{{ $question->id }}').play()" class="text-indigo-600 focus:ring-indigo-500">
+                                                        <span>Benar</span>
+                                                    </label>
+                                                    <label class="flex items-center gap-2 cursor-pointer p-2 border border-gray-250 bg-white rounded-lg hover:bg-purple-50 transition-colors text-xs font-semibold">
+                                                        <input type="radio" x-model="previewAnswers[{{ $question->id }}]" value="B" @change="localVideoAnswered = true; localVideoPaused = false; document.getElementById('preview-video-{{ $question->id }}').play()" class="text-indigo-600 focus:ring-indigo-500">
+                                                        <span>Salah</span>
+                                                    </label>
+                                                </div>
+                                            @else
+                                                <div class="space-y-2">
+                                                    <input type="text" id="preview-video-sa-{{ $question->id }}" x-model="previewAnswers[{{ $question->id }}]" placeholder="Ketik jawaban video..." class="w-full rounded-lg border-gray-300 text-xs">
+                                                    <button type="button" @click="if (previewAnswers[{{ $question->id }}]) { localVideoAnswered = true; localVideoPaused = false; document.getElementById('preview-video-{{ $question->id }}').play() }" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-colors">
+                                                        Kirim Jawaban & Lanjutkan
+                                                    </button>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="text-[10px] text-gray-500 flex justify-between">
+                                        <span>*Video akan terjeda pada detik ke-{{ $timestamp }}</span>
+                                        <button type="button" @click="localVideoAnswered = false; localVideoPaused = false; document.getElementById('preview-video-{{ $question->id }}').currentTime = 0; document.getElementById('preview-video-{{ $question->id }}').play()" class="text-indigo-600 hover:underline">Reset Simulasi Video</button>
+                                    </div>
+                                </div>
+                            @endif
+
+                            <!-- Interactive Answer Checking Panel -->
+                            <div class="mt-6 pt-4 border-t border-gray-150 flex flex-col gap-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-gray-400 font-medium">Uji kebenaran input di atas:</span>
+                                    <button type="button" 
+                                            @click="checkAnswer({{ $question->id }}, '{{ $question->question_type }}', '{{ addslashes($question->correct_answer) }}', '{{ addslashes($question->options['keywords'] ?? '') }}')"
+                                            class="inline-flex items-center gap-1.5 px-4 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold transition-all border border-indigo-200 active:scale-95">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        Uji Kunci Jawaban
+                                    </button>
+                                </div>
+
+                                <!-- Feedback display -->
+                                <template x-if="previewChecked[{{ $question->id }}]">
+                                    <div class="p-3.5 rounded-xl border text-xs font-bold leading-relaxed transition-all duration-300"
+                                         :class="showFeedback[{{ $question->id }}].isCorrect ? 'bg-emerald-50 border-emerald-250 text-emerald-800' : 'bg-rose-50 border-rose-250 text-rose-800'">
+                                        <div class="flex items-start gap-2">
+                                            <span class="text-base" x-text="showFeedback[{{ $question->id }}].isCorrect ? '🎉' : '❌'"></span>
+                                            <div class="flex-1">
+                                                <p x-text="showFeedback[{{ $question->id }}].text"></p>
+                                                @if($question->feedback)
+                                                    <p class="mt-2 font-semibold text-gray-600 bg-white/70 p-2 rounded-lg border border-black/5 leading-normal">
+                                                        <strong>Pembahasan/Feedback Soal:</strong> {{ $question->feedback }}
+                                                    </p>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="flex justify-end border-t border-gray-150 pt-4 flex-shrink-0">
+                    <button type="button" @click="showPreviewModal = false" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-255 text-gray-700 text-sm font-bold rounded-2xl transition-all">
+                        Tutup Pratinjau
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     </div>
 </x-app-layout>

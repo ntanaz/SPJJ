@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex items-center gap-4">
             <h2 class="font-bold text-2xl text-gray-800 tracking-tight flex items-center gap-3">
-                <svg class="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 Ujian Berlangsung: {{ $quiz->title }}
             </h2>
         </div>
@@ -79,7 +79,7 @@
             </div>
             
             <div class="w-full bg-gray-200 rounded-full h-3">
-                <div class="bg-gradient-to-r from-amber-400 to-orange-500 h-3 rounded-full transition-all duration-500" :style="'width: ' + ((answered/total)*100) + '%'"></div>
+                <div class="bg-gradient-to-r from-indigo-500 to-purple-600 h-3 rounded-full transition-all duration-500" :style="'width: ' + ((answered/total)*100) + '%'"></div>
             </div>
         </div>
 
@@ -91,10 +91,10 @@
                         @foreach($quiz->questions as $index => $question)
                             <div class="relative pl-0 sm:pl-16">
                                 <!-- Number Indicator -->
-                                <div class="hidden sm:flex absolute left-0 top-0 w-12 h-12 bg-amber-100 text-amber-600 rounded-full font-black text-xl items-center justify-center border-2 border-white shadow-sm ring-4 ring-amber-50">
+                                <div class="hidden sm:flex absolute left-0 top-0 w-12 h-12 bg-indigo-50 text-indigo-700 rounded-full font-black text-xl items-center justify-center border-2 border-white shadow-sm ring-4 ring-indigo-50">
                                     {{ $index + 1 }}
                                 </div>
-                                <div class="sm:hidden w-10 h-10 mb-4 bg-amber-100 text-amber-600 rounded-full font-black flex items-center justify-center text-lg">
+                                <div class="sm:hidden w-10 h-10 mb-4 bg-indigo-50 text-indigo-700 rounded-full font-black flex items-center justify-center text-lg">
                                     {{ $index + 1 }}
                                 </div>
                                 
@@ -107,11 +107,11 @@
                                 @if($question->question_type === 'multiple_choice')
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         @foreach($question->options as $key => $option)
-                                            <label class="group relative flex cursor-pointer rounded-2xl border-2 border-gray-200 bg-white p-5 hover:border-amber-300 hover:bg-amber-50 focus-within:ring-4 focus-within:ring-amber-100 transition-all">
+                                            <label class="group relative flex cursor-pointer rounded-2xl border-2 border-gray-200 bg-white p-5 hover:border-indigo-300 hover:bg-indigo-50/50 focus-within:ring-4 focus-within:ring-indigo-100 transition-all">
                                                 <div class="flex w-full items-center justify-between">
                                                     <div class="flex items-center gap-4">
                                                         <div class="relative flex h-6 w-6 items-center justify-center">
-                                                            <input type="radio" name="answers[{{ $question->id }}]" value="{{ $key }}" class="peer h-6 w-6 border-2 border-gray-300 text-amber-600 focus:ring-amber-500 rounded-full bg-white checked:border-amber-500 checked:bg-amber-500 transition-colors">
+                                                            <input type="radio" name="answers[{{ $question->id }}]" value="{{ $key }}" class="peer h-6 w-6 border-2 border-gray-300 text-indigo-650 focus:ring-indigo-500 rounded-full bg-white checked:border-indigo-500 checked:bg-indigo-500 transition-colors">
                                                         </div>
                                                         <div class="text-sm font-bold text-gray-800">
                                                             <span class="mr-2 inline-block px-2 py-1 bg-gray-100 text-gray-500 rounded-lg text-xs">{{ $key }}</span>
@@ -126,12 +126,12 @@
                                 <!-- 2. True / False -->
                                 @elseif($question->question_type === 'true_false')
                                     <div class="flex gap-6">
-                                        <label class="group relative flex cursor-pointer rounded-2xl border-2 border-gray-200 bg-white px-8 py-5 hover:border-amber-300 hover:bg-amber-50 focus-within:ring-4 focus-within:ring-amber-100 transition-all">
-                                            <input type="radio" name="answers[{{ $question->id }}]" value="A" class="peer h-6 w-6 mr-3 border-2 border-gray-300 text-amber-600 focus:ring-amber-500 rounded-full bg-white checked:border-amber-500 checked:bg-amber-500 transition-colors">
+                                        <label class="group relative flex cursor-pointer rounded-2xl border-2 border-gray-200 bg-white px-8 py-5 hover:border-indigo-300 hover:bg-indigo-50/50 focus-within:ring-4 focus-within:ring-indigo-100 transition-all">
+                                            <input type="radio" name="answers[{{ $question->id }}]" value="A" class="peer h-6 w-6 mr-3 border-2 border-gray-300 text-indigo-650 focus:ring-indigo-500 rounded-full bg-white checked:border-indigo-500 checked:bg-indigo-500 transition-colors">
                                             <span class="text-sm font-bold text-gray-800">Benar</span>
                                         </label>
-                                        <label class="group relative flex cursor-pointer rounded-2xl border-2 border-gray-200 bg-white px-8 py-5 hover:border-amber-300 hover:bg-amber-50 focus-within:ring-4 focus-within:ring-amber-100 transition-all">
-                                            <input type="radio" name="answers[{{ $question->id }}]" value="B" class="peer h-6 w-6 mr-3 border-2 border-gray-300 text-amber-600 focus:ring-amber-500 rounded-full bg-white checked:border-amber-500 checked:bg-amber-500 transition-colors">
+                                        <label class="group relative flex cursor-pointer rounded-2xl border-2 border-gray-200 bg-white px-8 py-5 hover:border-indigo-300 hover:bg-indigo-50/50 focus-within:ring-4 focus-within:ring-indigo-100 transition-all">
+                                            <input type="radio" name="answers[{{ $question->id }}]" value="B" class="peer h-6 w-6 mr-3 border-2 border-gray-300 text-indigo-650 focus:ring-indigo-500 rounded-full bg-white checked:border-indigo-500 checked:bg-indigo-500 transition-colors">
                                             <span class="text-sm font-bold text-gray-800">Salah</span>
                                         </label>
                                     </div>
@@ -139,7 +139,7 @@
                                 <!-- 3. Short Answer -->
                                 @elseif($question->question_type === 'short_answer')
                                     <div class="w-full">
-                                        <input type="text" name="answers[{{ $question->id }}]" placeholder="Ketik jawaban singkat Anda di sini..." class="w-full rounded-2xl border-2 border-gray-200 px-5 py-4 focus:border-amber-500 focus:ring focus:ring-amber-200 text-sm font-medium">
+                                        <input type="text" name="answers[{{ $question->id }}]" placeholder="Ketik jawaban singkat Anda di sini..." class="w-full rounded-2xl border-2 border-gray-200 px-5 py-4 focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm font-medium">
                                     </div>
                                 
                                 <!-- 4. Fill in the Blank -->
@@ -147,7 +147,7 @@
                                     @php
                                         $template = $question->options['code_template'] ?? '';
                                         $placeholder = $question->options['blank_placeholder'] ?? '[blank]';
-                                        $inputHtml = '<input type="text" name="answers['.$question->id.']" placeholder="..." class="mx-1 px-3 py-1 bg-white border-2 border-amber-300 rounded-lg text-amber-900 font-mono text-sm focus:border-amber-500 focus:ring focus:ring-amber-200 outline-none w-48 inline-block" required>';
+                                        $inputHtml = '<input type="text" name="answers['.$question->id.']" placeholder="..." class="mx-1 px-3 py-1 bg-white border-2 border-indigo-300 rounded-lg text-indigo-900 font-mono text-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 outline-none w-48 inline-block" required>';
                                         $escapedTemplate = e($template);
                                         $renderedCode = str_replace(e($placeholder), $inputHtml, $escapedTemplate);
                                     @endphp
@@ -164,7 +164,7 @@
                                 <!-- 5. Reflection -->
                                 @elseif($question->question_type === 'reflection')
                                     <div class="w-full">
-                                        <textarea name="answers[{{ $question->id }}]" rows="4" placeholder="Ketik refleksi atau pendapat bebas Anda di sini..." class="w-full rounded-2xl border-2 border-gray-200 px-5 py-4 focus:border-amber-500 focus:ring focus:ring-amber-200 text-sm font-medium" required></textarea>
+                                        <textarea name="answers[{{ $question->id }}]" rows="4" placeholder="Ketik refleksi atau pendapat bebas Anda di sini..." class="w-full rounded-2xl border-2 border-gray-200 px-5 py-4 focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm font-medium" required></textarea>
                                     </div>
 
                                 <!-- 6. Debugging -->
@@ -186,7 +186,7 @@
                                         
                                         <div class="space-y-2">
                                             <label class="block text-sm font-bold text-gray-700">Tulis Kode Perbaikan Anda:</label>
-                                            <textarea name="answers[{{ $question->id }}]" rows="6" placeholder="Tulis kode pemrograman yang benar di sini..." class="w-full rounded-2xl border-2 border-gray-200 bg-gray-900 text-green-400 font-mono text-sm px-5 py-4 focus:border-amber-500 focus:ring focus:ring-amber-200 shadow-inner" required></textarea>
+                                            <textarea name="answers[{{ $question->id }}]" rows="6" placeholder="Tulis kode pemrograman yang benar di sini..." class="w-full rounded-2xl border-2 border-gray-200 bg-gray-900 text-green-400 font-mono text-sm px-5 py-4 focus:border-indigo-500 focus:ring focus:ring-indigo-200 shadow-inner" required></textarea>
                                         </div>
                                     </div>
 
@@ -201,19 +201,19 @@
                                             </video>
                                         </div>
                                         
-                                        <div x-show="paused" class="p-5 bg-amber-50 border border-amber-200 rounded-2xl shadow-sm transition-all duration-300">
-                                            <p class="font-bold text-amber-900 mb-3 flex items-center gap-2">
-                                                <svg class="w-5 h-5 text-amber-600 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 5.25v13.5m-7.5-13.5v13.5" /></svg>
+                                        <div x-show="paused" class="p-5 bg-purple-50 border border-purple-100 rounded-2xl shadow-sm transition-all duration-300">
+                                            <p class="font-bold text-purple-900 mb-3 flex items-center gap-2">
+                                                <svg class="w-5 h-5 text-purple-600 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 5.25v13.5m-7.5-13.5v13.5" /></svg>
                                                 Video Dijeda Otomatis: Jawab kuis video di bawah ini
                                             </p>
                                             
-                                            <div class="bg-white p-4 rounded-xl border border-amber-100">
+                                            <div class="bg-white p-4 rounded-xl border border-purple-100">
                                                 <!-- MC sub-type inside video -->
                                                 @if(($question->options['video_question_type'] ?? '') === 'multiple_choice')
                                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                                                         @foreach(($question->options['options'] ?? []) as $key => $option)
-                                                            <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-200 bg-white hover:bg-amber-50 cursor-pointer transition-colors">
-                                                                <input type="radio" name="answers[{{ $question->id }}]" value="{{ $key }}" @change="answered = true; paused = false; document.getElementById('video-{{ $question->id }}').play()" class="text-amber-600 focus:ring-amber-500">
+                                                            <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-200 bg-white hover:bg-purple-50 cursor-pointer transition-colors">
+                                                                <input type="radio" name="answers[{{ $question->id }}]" value="{{ $key }}" @change="answered = true; paused = false; document.getElementById('video-{{ $question->id }}').play()" class="text-indigo-600 focus:ring-indigo-500">
                                                                 <span class="font-bold text-sm text-gray-700">{{ $key }}. {{ $option }}</span>
                                                             </label>
                                                         @endforeach
@@ -222,12 +222,12 @@
                                                 <!-- TF sub-type inside video -->
                                                 @elseif(($question->options['video_question_type'] ?? '') === 'true_false')
                                                     <div class="flex gap-4">
-                                                        <label class="flex items-center gap-2 cursor-pointer p-3 border border-gray-200 bg-white rounded-xl hover:bg-amber-50 transition-colors">
-                                                            <input type="radio" name="answers[{{ $question->id }}]" value="A" @change="answered = true; paused = false; document.getElementById('video-{{ $question->id }}').play()" class="text-amber-600 focus:ring-amber-500">
+                                                        <label class="flex items-center gap-2 cursor-pointer p-3 border border-gray-200 bg-white rounded-xl hover:bg-purple-50 transition-colors">
+                                                            <input type="radio" name="answers[{{ $question->id }}]" value="A" @change="answered = true; paused = false; document.getElementById('video-{{ $question->id }}').play()" class="text-indigo-600 focus:ring-indigo-500">
                                                             <span class="font-bold text-sm text-gray-700">Benar</span>
                                                         </label>
-                                                        <label class="flex items-center gap-2 cursor-pointer p-3 border border-gray-200 bg-white rounded-xl hover:bg-amber-50 transition-colors">
-                                                            <input type="radio" name="answers[{{ $question->id }}]" value="B" @change="answered = true; paused = false; document.getElementById('video-{{ $question->id }}').play()" class="text-amber-600 focus:ring-amber-500">
+                                                        <label class="flex items-center gap-2 cursor-pointer p-3 border border-gray-200 bg-white rounded-xl hover:bg-purple-50 transition-colors">
+                                                            <input type="radio" name="answers[{{ $question->id }}]" value="B" @change="answered = true; paused = false; document.getElementById('video-{{ $question->id }}').play()" class="text-indigo-600 focus:ring-indigo-500">
                                                             <span class="font-bold text-sm text-gray-700">Salah</span>
                                                         </label>
                                                     </div>
@@ -235,8 +235,8 @@
                                                 <!-- SA sub-type inside video -->
                                                 @else
                                                     <div class="space-y-3">
-                                                        <input type="text" id="video-sa-{{ $question->id }}" name="answers[{{ $question->id }}]" placeholder="Ketik jawaban Anda..." class="w-full rounded-xl border-gray-300 shadow-sm focus:border-amber-500 focus:ring focus:ring-amber-200">
-                                                        <button type="button" @click="if (document.getElementById('video-sa-{{ $question->id }}').value.trim() !== '') { answered = true; paused = false; document.getElementById('video-{{ $question->id }}').play() }" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-sm font-bold transition-colors">
+                                                        <input type="text" id="video-sa-{{ $question->id }}" name="answers[{{ $question->id }}]" placeholder="Ketik jawaban Anda..." class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200">
+                                                        <button type="button" @click="if (document.getElementById('video-sa-{{ $question->id }}').value.trim() !== '') { answered = true; paused = false; document.getElementById('video-{{ $question->id }}').play() }" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold transition-colors">
                                                             Kirim Jawaban & Lanjutkan
                                                         </button>
                                                     </div>
@@ -256,7 +256,7 @@
 
                 <div class="bg-gray-50 px-8 py-6 border-t border-gray-100 flex items-center justify-between sm:px-12 rounded-b-3xl">
                     <p class="text-sm text-gray-500 font-medium hidden sm:block">Periksa kembali jawaban Anda sebelum mengumpulkan.</p>
-                    <button type="submit" onclick="return confirm('Apakah Anda yakin ingin mengumpulkan Kuis ini? Semua jawaban yang terkirim tidak dapat diubah kembali.')" class="w-full sm:w-auto px-10 py-4 bg-amber-600 hover:bg-amber-700 active:scale-95 transition-transform text-white text-lg font-black rounded-xl shadow-lg shadow-amber-600/30 flex items-center justify-center gap-3">
+                    <button type="submit" onclick="return confirm('Apakah Anda yakin ingin mengumpulkan Kuis ini? Semua jawaban yang terkirim tidak dapat diubah kembali.')" class="w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-indigo-650 to-purple-600 hover:from-indigo-700 hover:to-purple-750 active:scale-95 transition-all text-white text-lg font-black rounded-2xl shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-3">
                         <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
                         Selesai & Kumpulkan
                     </button>

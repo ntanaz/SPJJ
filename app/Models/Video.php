@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Video extends Model
 {
-    protected $fillable = ['module_id', 'title', 'video_path', 'duration'];
+    protected $fillable = ['module_id', 'title', 'video_path', 'duration', 'description'];
 
     public function module()
     {
@@ -39,7 +39,7 @@ class Video extends Model
                     [
                         'activity_type' => 'video',
                         'title' => 'Video Pembelajaran - ' . $video->title,
-                        'description' => 'Tonton video pembelajaran interaktif: ' . $video->title,
+                        'description' => $video->description ?: ('Tonton video pembelajaran interaktif: ' . $video->title),
                         'order_number' => \App\Models\LearningActivity::where('module_id', $video->module_id)->where('video_id', $video->id)->value('order_number') ?: ($maxOrder + 1),
                         'is_required' => true,
                     ]

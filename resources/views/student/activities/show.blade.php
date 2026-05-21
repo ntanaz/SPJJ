@@ -157,37 +157,85 @@
                                 </div>
 
                                 <!-- Interactive Question Modal -->
-                                <div x-show="showQuizModal" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
-                                    <div class="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-gray-100 space-y-6 transform scale-100 transition-all duration-300">
-                                        <div class="text-center">
-                                            <span class="inline-block px-3 py-1 bg-rose-50 text-rose-600 rounded-full text-xs font-bold uppercase tracking-wider mb-2"
-                                                x-text="activeQuestion.question_type === 'true_false' ? '✅ Benar / Salah' : (activeQuestion.question_type === 'short_answer' ? '✏️ Jawaban Singkat' : '🎯 Quiz Pop Up!')"></span>
-                                            <h4 class="text-xl font-black text-gray-800" x-text="activeQuestion.question"></h4>
+                                <div x-show="showQuizModal" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/70 backdrop-blur-md p-4 animate-fade-in">
+                                    <div class="bg-white rounded-3xl p-8 max-w-lg w-full shadow-2xl border border-gray-100 space-y-6 transform scale-100 transition-all duration-300">
+                                        
+                                        <!-- Header Badge & Question -->
+                                        <div class="text-center space-y-2">
+                                            <span class="inline-block px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm"
+                                                x-text="activeQuestion.question_type === 'true_false' ? '📊 Benar / Salah' : (activeQuestion.question_type === 'short_answer' ? '✏️ Jawaban Singkat' : '🎯 Kuis Interaktif')"></span>
+                                            <h4 class="text-lg sm:text-xl font-black text-gray-850 leading-snug" x-text="activeQuestion.question"></h4>
                                         </div>
 
-                                        <div class="space-y-3" x-show="activeQuestion.question_type === 'multiple_choice' || activeQuestion.question_type === 'true_false' || !activeQuestion.question_type">
-                                            <template x-for="(opt, idx) in activeQuestion.options" :key="idx">
-                                                <button
-                                                    @click="selectAnswer(opt)"
-                                                    class="w-full text-left p-4 rounded-2xl border-2 transition-all font-bold text-sm"
-                                                    :class="(selectedAnswer && selectedAnswer.id === opt.id) ? 'border-indigo-650 bg-indigo-50 text-indigo-755 text-indigo-700' : 'border-gray-100 hover:border-indigo-100 text-gray-750 hover:text-gray-900 bg-gray-50 hover:bg-white'">
-                                                    <span class="mr-2" x-text="String.fromCharCode(65 + idx) + '.'"></span>
-                                                    <span x-text="opt.option_text"></span>
-                                                </button>
-                                            </template>
+                                        <!-- Options or Input Field -->
+                                        <div class="space-y-3" x-show="!questionFeedback">
+                                            <!-- Multiple Choice & True/False options list -->
+                                            <div class="space-y-2.5" x-show="activeQuestion.question_type === 'multiple_choice' || activeQuestion.question_type === 'true_false' || !activeQuestion.question_type">
+                                                <template x-for="(opt, idx) in activeQuestion.options" :key="idx">
+                                                    <button
+                                                        @click="selectAnswer(opt)"
+                                                        class="w-full text-left p-4 rounded-2xl border-2 transition-all font-bold text-sm flex items-center gap-3 active:scale-[0.98] duration-205"
+                                                        :class="(selectedAnswer && selectedAnswer.id === opt.id) ? 'border-indigo-600 bg-indigo-50/50 text-indigo-700 shadow-sm' : 'border-gray-100 hover:border-indigo-100 text-gray-650 hover:text-gray-800 bg-gray-50/50 hover:bg-white'">
+                                                        <span class="h-6 w-6 rounded-lg flex items-center justify-center font-extrabold text-xs"
+                                                            :class="(selectedAnswer && selectedAnswer.id === opt.id) ? 'bg-indigo-650 text-white shadow-sm' : 'bg-white text-gray-400 border border-gray-200'"
+                                                            x-text="String.fromCharCode(65 + idx)"></span>
+                                                        <span x-text="opt.option_text"></span>
+                                                    </button>
+                                                </template>
+                                            </div>
+
+                                            <!-- Short Answer Input -->
+                                            <div x-show="activeQuestion.question_type === 'short_answer'" class="space-y-2">
+                                                <label class="block text-xs font-extrabold text-gray-400 uppercase tracking-wider">Ketik Jawaban Anda:</label>
+                                                <input type="text" x-model="selectedAnswer" class="w-full rounded-2xl border-gray-200 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-150 text-sm font-bold p-4" placeholder="Cth: convolutional neural network...">
+                                            </div>
                                         </div>
 
-                                        <div x-show="activeQuestion.question_type === 'short_answer'" class="space-y-3">
-                                            <input type="text" x-model="selectedAnswer" class="w-full rounded-2xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm font-bold p-4" placeholder="Ketik jawaban Anda disini...">
+                                        <!-- PREMIUM Pembahasan & Correctness Feedback Card -->
+                                        <div x-show="questionFeedback" style="display: none;" class="space-y-4">
+                                            <!-- Correctness Banner -->
+                                            <div class="p-5 rounded-2xl border flex items-center gap-4 transition-all shadow-sm"
+                                                :class="isAnswerCorrect ? 'bg-emerald-50 border-emerald-250 text-emerald-800' : 'bg-rose-50 border-rose-250 text-rose-800'">
+                                                <div class="h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm"
+                                                    :class="isAnswerCorrect ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'">
+                                                    <template x-if="isAnswerCorrect">
+                                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
+                                                    </template>
+                                                    <template x-if="!isAnswerCorrect">
+                                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" /></svg>
+                                                    </template>
+                                                </div>
+                                                <div>
+                                                    <h5 class="font-extrabold text-sm sm:text-base" x-text="isAnswerCorrect ? 'Jawaban Anda Benar!' : 'Jawaban Kurang Tepat'"></h5>
+                                                    <p class="text-xs font-semibold opacity-90 mt-0.5" x-text="isAnswerCorrect ? 'Hebat! Anda mendapatkan +15 XP.' : 'Jangan berkecil hati, mari pelajari pembahasannya.'"></p>
+                                                </div>
+                                            </div>
+
+                                            <!-- Answer Info Cards -->
+                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                <div class="bg-gray-50 border border-gray-100 p-4 rounded-2xl">
+                                                    <span class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider block">Jawaban Anda</span>
+                                                    <span class="text-sm font-bold text-gray-700 block mt-1" x-text="typeof selectedAnswer === 'object' ? selectedAnswer.option_text : selectedAnswer"></span>
+                                                </div>
+                                                <div class="bg-indigo-50/50 border border-indigo-100 p-4 rounded-2xl">
+                                                    <span class="text-[10px] font-extrabold text-indigo-400 uppercase tracking-wider block">Jawaban Seharusnya</span>
+                                                    <span class="text-sm font-black text-indigo-700 block mt-1" x-text="correctAnswerText"></span>
+                                                </div>
+                                            </div>
+
+                                            <!-- Teacher's Explanation / Feedback -->
+                                            <div class="bg-gradient-to-r from-gray-50 to-white border border-gray-150 p-5 rounded-2xl space-y-2">
+                                                <div class="flex items-center gap-2 text-xs font-extrabold text-gray-450 uppercase tracking-wider">
+                                                    <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                                                    Pembahasan Guru &amp; Catatan Belajar
+                                                </div>
+                                                <p class="text-sm text-gray-650 leading-relaxed font-semibold" x-text="questionFeedback"></p>
+                                            </div>
                                         </div>
 
-                                        <div x-show="questionFeedback" class="p-4 rounded-2xl border text-sm font-bold text-center"
-                                            :class="isAnswerCorrect ? 'bg-emerald-50 border-emerald-250 text-emerald-800' : 'bg-rose-50 border-rose-250 text-rose-800'">
-                                            <p x-text="questionFeedback"></p>
-                                        </div>
-
+                                        <!-- Footer Action Buttons -->
                                         <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                                            <button x-show="!questionFeedback" @click="submitAnswer()" :disabled="!selectedAnswer" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold rounded-2xl shadow-md transition-all active:scale-95 text-center text-sm">
+                                            <button x-show="!questionFeedback" @click="submitAnswer()" :disabled="!selectedAnswer" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-755 disabled:bg-gray-250 disabled:text-gray-400 disabled:cursor-not-allowed text-white font-bold rounded-2xl shadow-md transition-all active:scale-95 text-center text-sm">
                                                 Kirim Jawaban
                                             </button>
                                             <button x-show="questionFeedback" @click="resumePlayback()" class="w-full py-3.5 bg-gray-800 hover:bg-gray-900 text-white font-bold rounded-2xl shadow-md transition-all active:scale-95 text-center text-sm">
@@ -586,6 +634,7 @@
                     selectedAnswer:       '',
                     questionFeedback:     '',
                     isAnswerCorrect:      false,
+                    correctAnswerText:    '',
                     answeredQuestionIds:  {!! json_encode($video ? ($videoLog && is_array($videoLog->answered_quiz) ? array_map('intval', array_keys($videoLog->answered_quiz)) : []) : ($material ? \App\Models\VideoParticipationTracking::where('material_id', $material->id)->where('user_id', auth()->id())->pluck('question_id')->map('intval')->toArray() : [])) !!},
                     lastTriggeredTime:    -1,
                     checkInterval:        null,
@@ -699,11 +748,10 @@
                     },
 
                     checkVideoTime(currentTime) {
+                        if (this.showQuizModal) return;
                         const t = Math.floor(currentTime);
-                        if (t === this.lastTriggeredTime) return;
-                        const match = this.questions.find(q => q.timestamp === t);
-                        if (match && !this.answeredQuestionIds.includes(match.id)) {
-                            this.lastTriggeredTime = t;
+                        const match = this.questions.find(q => q.timestamp <= t && !this.answeredQuestionIds.includes(q.id));
+                        if (match) {
                             this.triggerQuizPopup(match);
                         }
                     },
@@ -712,6 +760,7 @@
                         this.activeQuestion    = question;
                         this.selectedAnswer    = '';
                         this.questionFeedback  = '';
+                        this.correctAnswerText = '';
                         this.showQuizModal     = true;
                         if (this.player)      this.player.pauseVideo();
                         if (this.localVideo)  this.localVideo.pause();
@@ -763,6 +812,7 @@
                             if (data.is_correct !== undefined) {
                                 self.isAnswerCorrect = data.is_correct;
                                 self.questionFeedback = data.feedback;
+                                self.correctAnswerText = data.correct_answer || '';
                                 self.answeredQuestionIds.push(self.activeQuestion.id);
                             } else {
                                 alert(data.error || 'Gagal menyimpan jawaban. Silakan coba kembali.');

@@ -300,100 +300,59 @@ class QuizController extends Controller
 
     private function getQuestionValidationRules(Request $request)
     {
-        return [
+        $rules = [
             'question_type' => 'required|in:multiple_choice,true_false,short_answer,fill_blank,reflection,debugging,interactive_video',
             'question' => 'required|string',
             'points' => 'required|integer|min:1',
             'feedback' => 'nullable|string',
-
-            'option_a' => [
-                \Illuminate\Validation\Rule::requiredIf(function () use ($request) {
-                    return $request->question_type === 'multiple_choice' ||
-                        ($request->question_type === 'interactive_video' && $request->video_question_type === 'multiple_choice');
-                }),
-                'nullable',
-                'string'
-            ],
-            'option_b' => [
-                \Illuminate\Validation\Rule::requiredIf(function () use ($request) {
-                    return $request->question_type === 'multiple_choice' ||
-                        ($request->question_type === 'interactive_video' && $request->video_question_type === 'multiple_choice');
-                }),
-                'nullable',
-                'string'
-            ],
-            'option_c' => [
-                \Illuminate\Validation\Rule::requiredIf(function () use ($request) {
-                    return $request->question_type === 'multiple_choice' ||
-                        ($request->question_type === 'interactive_video' && $request->video_question_type === 'multiple_choice');
-                }),
-                'nullable',
-                'string'
-            ],
-            'option_d' => [
-                \Illuminate\Validation\Rule::requiredIf(function () use ($request) {
-                    return $request->question_type === 'multiple_choice' ||
-                        ($request->question_type === 'interactive_video' && $request->video_question_type === 'multiple_choice');
-                }),
-                'nullable',
-                'string'
-            ],
-
-            'correct_answer' => [
-                \Illuminate\Validation\Rule::requiredIf(function () use ($request) {
-                    return in_array($request->question_type, ['multiple_choice', 'true_false', 'short_answer', 'fill_blank', 'debugging']) ||
-                        ($request->question_type === 'interactive_video');
-                }),
-                'nullable',
-                'string',
-                function ($attribute, $value, $fail) use ($request) {
-                    if (empty($value)) return;
-                    
-                    if ($request->question_type === 'multiple_choice') {
-                        if (!in_array($value, ['A', 'B', 'C', 'D'])) {
-                            $fail('Jawaban benar untuk Pilihan Ganda harus salah satu dari A, B, C, atau D.');
-                        }
-                    } elseif ($request->question_type === 'true_false') {
-                        if (!in_array($value, ['A', 'B'])) {
-                            $fail('Jawaban benar untuk True/False harus A (Benar) atau B (Salah).');
-                        }
-                    } elseif ($request->question_type === 'interactive_video') {
-                        if ($request->video_question_type === 'multiple_choice') {
-                            if (!in_array($value, ['A', 'B', 'C', 'D'])) {
-                                $fail('Jawaban benar untuk Video Pilihan Ganda harus salah satu dari A, B, C, atau D.');
-                            }
-                        } elseif ($request->video_question_type === 'true_false') {
-                            if (!in_array($value, ['A', 'B'])) {
-                                $fail('Jawaban benar untuk Video True/False harus A (Benar) atau B (Salah).');
-                            }
-                        }
-                    }
-                }
-            ],
-
-            'keywords' => 'nullable|string',
-            'code_template' => 'nullable|string',
-            'blank_placeholder' => 'nullable|string',
-            'feedback_correct' => 'nullable|string',
-            'feedback_incorrect' => 'nullable|string',
-            'max_attempts' => 'nullable|integer|min:1',
-            'code_snippet' => 'nullable|string',
-            'bug_description' => 'nullable|string',
-
-            'timestamp' => [
-                \Illuminate\Validation\Rule::requiredIf($request->question_type === 'interactive_video'),
-                'nullable',
-                'integer',
-                'min:0'
-            ],
-            'video_question_type' => [
-                \Illuminate\Validation\Rule::requiredIf($request->question_type === 'interactive_video'),
-                'nullable',
-                'in:multiple_choice,true_false,short_answer'
-            ],
-            'video_file' => 'nullable|file|mimes:mp4,mov,avi,wmv|max:102400',
-            'video_url_select' => 'nullable|string',
-            'video_url' => 'nullable|string',
         ];
+
+        $type = $request->question_type;
+
+        if ($type === 'multiple_choice') {
+            $rules['option_a'] = 'required|string';
+            $rules['option_b'] = 'required|string';
+            $rules['option_c'] = 'required|string';
+            $rules['option_d'] = 'required|string';
+            $rules['correct_answer'] = 'required|string|in:A,B,C,D';
+        } elseif ($type === 'true_false') {
+            $rules['correct_answer'] = 'required|string|in:A,B';
+        } elseif ($type === 'short_answer') {
+            $rules['correct_answer'] = 'required|string';
+            $rules['keywords'] = 'nullable|string';
+        } elseif ($type === 'fill_blank') {
+            $rules['code_template'] = 'required|string';
+            $rules['blank_placeholder'] = 'nullable|string';
+            $rules['correct_answer'] = 'required|string';
+            $rules['feedback_correct'] = 'nullable|string';
+            $rules['feedback_incorrect'] = 'nullable|string';
+            $rules['max_attempts'] = 'nullable|integer|min:1';
+        } elseif ($type === 'reflection') {
+            // reflection doesn't require correct_answer or options
+        } elseif ($type === 'debugging') {
+            $rules['code_snippet'] = 'required|string';
+            $rules['bug_description'] = 'required|string';
+            $rules['correct_answer'] = 'required|string';
+        } elseif ($type === 'interactive_video') {
+            $rules['timestamp'] = 'required|integer|min:0';
+            $rules['video_question_type'] = 'required|in:multiple_choice,true_false,short_answer';
+            $rules['video_file'] = 'nullable|file|mimes:mp4,mov,avi,wmv|max:102400';
+            $rules['video_url_select'] = 'nullable|string';
+            $rules['video_url'] = 'nullable|string';
+
+            if ($request->video_question_type === 'multiple_choice') {
+                $rules['option_a'] = 'required|string';
+                $rules['option_b'] = 'required|string';
+                $rules['option_c'] = 'required|string';
+                $rules['option_d'] = 'required|string';
+                $rules['correct_answer'] = 'required|string|in:A,B,C,D';
+            } elseif ($request->video_question_type === 'true_false') {
+                $rules['correct_answer'] = 'required|string|in:A,B';
+            } else {
+                $rules['correct_answer'] = 'required|string';
+            }
+        }
+
+        return $rules;
     }
 }

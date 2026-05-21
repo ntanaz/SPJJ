@@ -35,6 +35,31 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- LEFT PANEL: Video Upload & Player Preview -->
             <div class="lg:col-span-2 space-y-6">
+                <!-- Video Metadata Form Card -->
+                <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-4">
+                    <h3 class="font-black text-gray-800 text-lg flex items-center gap-2">
+                        🎬 Detail Video Pembelajaran
+                    </h3>
+                    <p class="text-xs text-gray-400 font-medium">Perbarui judul dan deskripsi video yang akan dibaca oleh siswa.</p>
+                    <form action="{{ route('videos.update', $video->id) }}" method="POST" class="space-y-4">
+                        @csrf
+                        @method('PUT')
+                        <div class="space-y-1">
+                            <label class="block text-xs font-extrabold text-gray-400 uppercase tracking-wider">Judul Video</label>
+                            <input type="text" name="title" value="{{ old('title', $video->title) }}" class="w-full text-sm font-semibold rounded-xl border-gray-200 focus:border-indigo-500 focus:ring focus:ring-indigo-150 transition-all" placeholder="Tuliskan judul video..." required>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-xs font-extrabold text-gray-400 uppercase tracking-wider">Deskripsi / Petunjuk Aktivitas</label>
+                            <textarea name="description" rows="3" class="w-full text-sm font-medium rounded-xl border-gray-200 focus:border-indigo-500 focus:ring focus:ring-indigo-150" placeholder="Tuliskan petunjuk pembelajaran atau langkah Discovery Learning untuk siswa...">{{ old('description', $video->description) }}</textarea>
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-755 text-white rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95">
+                                Simpan Detail Video
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
                 <!-- Video Player Card -->
                 <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-4">
                     <h3 class="font-black text-gray-800 text-lg">Pemutar Video & Penjelajah Timestamp</h3>
@@ -204,6 +229,91 @@
                         @endforelse
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- STUDENT ANSWER RECAP PANEL -->
+        <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-4">
+            <div class="flex items-center justify-between border-b border-gray-100 pb-4 flex-wrap gap-4">
+                <div>
+                    <h3 class="font-black text-gray-800 text-lg flex items-center gap-2">
+                        <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        Rekap Jawaban Kuis Siswa
+                    </h3>
+                    <p class="text-xs text-gray-400">Daftar seluruh jawaban kuis interaktif yang dikirimkan oleh siswa secara real-time.</p>
+                </div>
+                <span class="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-bold">
+                    {{ $attempts->count() }} Percobaan Terdeteksi
+                </span>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-gray-100 text-xs font-extrabold text-gray-400 uppercase tracking-wider">
+                            <th class="py-4 px-4">Siswa</th>
+                            <th class="py-4 px-4 text-center">Detik Video</th>
+                            <th class="py-4 px-4">Pertanyaan</th>
+                            <th class="py-4 px-4">Jawaban Siswa</th>
+                            <th class="py-4 px-4">Status</th>
+                            <th class="py-4 px-4">Waktu Pengerjaan</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50 text-sm font-semibold text-gray-700">
+                        @forelse($attempts as $attempt)
+                            <tr class="hover:bg-gray-50/50 transition-colors">
+                                <td class="py-4 px-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="h-8 w-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs uppercase shadow-sm">
+                                            {{ substr($attempt->user->name, 0, 2) }}
+                                        </div>
+                                        <div>
+                                            <div class="font-bold text-gray-800 text-xs sm:text-sm">{{ $attempt->user->name }}</div>
+                                            <div class="text-[9px] sm:text-[10px] text-gray-450">{{ $attempt->user->email }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-4 text-center">
+                                    <span class="px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold">
+                                        {{ $attempt->quiz->timestamp_seconds ?? 0 }}s
+                                    </span>
+                                </td>
+                                <td class="py-4 px-4">
+                                    <span class="line-clamp-1 max-w-[200px]" title="{{ $attempt->quiz->question ?? '-' }}">
+                                        {{ $attempt->quiz->question ?? '-' }}
+                                    </span>
+                                </td>
+                                <td class="py-4 px-4">
+                                    <span class="font-mono text-gray-600 bg-gray-50 px-2 py-1 rounded text-xs border border-gray-100">
+                                        {{ $attempt->answer }}
+                                    </span>
+                                </td>
+                                <td class="py-4 px-4">
+                                    @if($attempt->is_correct)
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold border border-emerald-100">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                            Benar
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-rose-50 text-rose-700 rounded-full text-xs font-bold border border-rose-100">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                                            Salah
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="py-4 px-4 text-xs text-gray-450 font-medium">
+                                    {{ $attempt->created_at->setTimezone('Asia/Jakarta')->translatedFormat('d M Y, H:i') }} WIB
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="text-center py-8 text-gray-400">
+                                    <p class="text-xs font-semibold">Belum ada siswa yang menjawab kuis video ini.</p>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>

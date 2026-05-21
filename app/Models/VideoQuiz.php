@@ -17,4 +17,9 @@ class VideoQuiz extends Model
     {
         return $this->hasMany(VideoQuizOption::class);
     }
+
+    public function attempts()
+    {
+        return $this->hasMany(VideoQuizAttempt::class, 'video_quiz_id');
+    }
 }

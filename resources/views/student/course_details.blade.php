@@ -546,6 +546,10 @@
                             <input type="text" name="title" id="new_video_title" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-colors" placeholder="Cth: Penjelasan Singkat Convolutional Neural Network" required>
                         </div>
                         <div>
+                            <label for="new_video_description" class="block text-sm font-bold text-gray-700 mb-2">Deskripsi Singkat Video</label>
+                            <textarea name="description" id="new_video_description" rows="3" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-colors" placeholder="Tulis deskripsi singkat, petunjuk aktivitas, atau instruksi langkah Discovery Learning..."></textarea>
+                        </div>
+                        <div>
                             <label for="new_video_file" class="block text-sm font-bold text-gray-700 mb-2">Pilih File Video (.mp4, .mov, .webm — Maks 500MB)</label>
                             <input type="file" name="video_file" id="new_video_file" accept="video/mp4,video/mov,video/webm" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" required>
                         </div>

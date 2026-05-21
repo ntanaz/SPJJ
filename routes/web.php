@@ -68,6 +68,7 @@ Route::middleware('auth')->group(function () {
         // Video Learning Teacher Management
         Route::post('modules/{module}/videos', [\App\Http\Controllers\VideoController::class, 'store'])->name('modules.videos.store');
         Route::get('videos/{video}/manage', [\App\Http\Controllers\VideoController::class, 'manage'])->name('videos.manage');
+        Route::put('videos/{video}', [\App\Http\Controllers\VideoController::class, 'update'])->name('videos.update');
         Route::post('videos/{video}/upload-file', [\App\Http\Controllers\VideoController::class, 'uploadFile'])->name('videos.upload_file');
         Route::post('videos/{video}/quizzes', [\App\Http\Controllers\VideoController::class, 'storeQuiz'])->name('videos.quizzes.store');
         Route::put('video-quizzes/{quiz}', [\App\Http\Controllers\VideoController::class, 'updateQuiz'])->name('videos.quizzes.update');

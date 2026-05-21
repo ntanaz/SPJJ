@@ -40,18 +40,22 @@ class Quiz extends Model
     {
         static::saved(function ($quiz) {
             if ($quiz->module_id) {
-                $maxOrder = \App\Models\LearningActivity::where('module_id', $quiz->module_id)->max('order_number') ?? 0;
-                
-                \App\Models\LearningActivity::updateOrCreate(
-                    ['module_id' => $quiz->module_id, 'quiz_id' => $quiz->id],
-                    [
+                $activity = \App\Models\LearningActivity::where('module_id', $quiz->module_id)
+                    ->where('quiz_id', $quiz->id)
+                    ->first();
+
+                if (!$activity) {
+                    $maxOrder = \App\Models\LearningActivity::where('module_id', $quiz->module_id)->max('order_number') ?? 0;
+                    \App\Models\LearningActivity::create([
+                        'module_id' => $quiz->module_id,
+                        'quiz_id' => $quiz->id,
                         'activity_type' => 'quiz',
                         'title' => 'Kuis: ' . $quiz->title,
                         'description' => $quiz->description,
-                        'order_number' => \App\Models\LearningActivity::where('module_id', $quiz->module_id)->where('quiz_id', $quiz->id)->value('order_number') ?: ($maxOrder + 1),
+                        'order_number' => $maxOrder + 1,
                         'is_required' => true,
-                    ]
-                );
+                    ]);
+                }
             }
         });
 

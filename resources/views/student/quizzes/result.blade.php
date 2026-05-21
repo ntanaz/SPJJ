@@ -99,8 +99,8 @@
                                             @endforeach
                                         </div>
                                     
-                                    <!-- Render Short Answer / Fill in the blank -->
-                                    @elseif(in_array($question->question_type, ['short_answer', 'fill_blank']))
+                                    <!-- Render Short Answer -->
+                                    @elseif($question->question_type === 'short_answer')
                                         <div class="space-y-2 text-sm">
                                             <div class="p-3 rounded-xl border bg-white flex items-center">
                                                 <span class="font-bold mr-2 text-gray-500">Jawaban Anda:</span>
@@ -110,6 +110,53 @@
                                                 <span class="font-bold mr-2 text-emerald-800">Jawaban Benar:</span>
                                                 <span class="font-mono font-bold text-emerald-800">{{ $question->correct_answer }}</span>
                                             </div>
+                                            @if(!empty($question->options['keywords']))
+                                                <div class="p-3 rounded-xl border bg-indigo-50 border-indigo-200 flex items-center">
+                                                    <span class="font-bold mr-2 text-indigo-800">Kata Kunci Diterima:</span>
+                                                    <span class="font-mono font-bold text-indigo-800">{{ $question->options['keywords'] }}</span>
+                                                </div>
+                                            @endif
+                                        </div>
+
+                                    <!-- Render Fill in the blank Coding -->
+                                    @elseif($question->question_type === 'fill_blank')
+                                        @php
+                                            $template = $question->options['code_template'] ?? '';
+                                            $placeholder = $question->options['blank_placeholder'] ?? '[blank]';
+                                            
+                                            // Render with student's answer
+                                            $studentAnswerText = $textAnswer ?: '(Kosong)';
+                                            $studentHtml = '<span class="mx-1 px-3 py-0.5 rounded font-mono text-sm font-bold border ' . ($isCorrect ? 'bg-emerald-100 border-emerald-300 text-emerald-800' : 'bg-red-100 border-red-300 text-red-800') . '">' . e($studentAnswerText) . '</span>';
+                                            $escapedTemplate = e($template);
+                                            $renderedStudentCode = str_replace(e($placeholder), $studentHtml, $escapedTemplate);
+                                            
+                                            // Render with correct answer
+                                            $correctHtml = '<span class="mx-1 px-3 py-0.5 rounded font-mono text-sm font-bold border bg-emerald-100 border-emerald-300 text-emerald-800">' . e($question->correct_answer) . '</span>';
+                                            $renderedCorrectCode = str_replace(e($placeholder), $correctHtml, $escapedTemplate);
+                                        @endphp
+                                        <div class="space-y-4 text-sm">
+                                            <div class="space-y-1">
+                                                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Kode Anda:</p>
+                                                <div class="p-4 bg-gray-900 text-yellow-300 rounded-2xl font-mono text-sm overflow-x-auto leading-relaxed shadow-inner">
+                                                    {!! nl2br($renderedStudentCode) !!}
+                                                </div>
+                                            </div>
+                                            <div class="space-y-1">
+                                                <p class="text-xs font-bold text-emerald-500 uppercase tracking-widest">Kunci Solusi Benar:</p>
+                                                <div class="p-4 bg-gray-900 text-yellow-300 rounded-2xl font-mono text-sm overflow-x-auto leading-relaxed shadow-inner">
+                                                    {!! nl2br($renderedCorrectCode) !!}
+                                                </div>
+                                            </div>
+                                            
+                                            @if($isCorrect && !empty($question->options['feedback_correct']))
+                                                <div class="p-4 bg-emerald-50 border border-emerald-250 rounded-2xl text-emerald-800">
+                                                    <strong>Feedback:</strong> {{ $question->options['feedback_correct'] }}
+                                                </div>
+                                            @elseif(!$isCorrect && !empty($question->options['feedback_incorrect']))
+                                                <div class="p-4 bg-red-50 border border-red-200 rounded-2xl text-red-800">
+                                                    <strong>Feedback:</strong> {{ $question->options['feedback_incorrect'] }}
+                                                </div>
+                                            @endif
                                         </div>
 
                                     <!-- Render Reflection -->
@@ -124,7 +171,21 @@
 
                                     <!-- Render Debugging -->
                                     @elseif($question->question_type === 'debugging')
-                                        <div class="space-y-3 text-sm">
+                                        <div class="space-y-4 text-sm">
+                                            @if(!empty($question->options['bug_description']))
+                                                <div class="p-4 bg-rose-50 border border-rose-150 rounded-2xl text-rose-800 text-sm">
+                                                    <strong>Deskripsi Masalah/Bug:</strong>
+                                                    <p class="mt-1 font-medium">{{ $question->options['bug_description'] }}</p>
+                                                </div>
+                                            @endif
+                                            
+                                            @if(!empty($question->options['code_snippet']))
+                                                <div>
+                                                    <p class="text-xs font-bold text-gray-400 uppercase mb-1">Kode Bermasalah (Awal):</p>
+                                                    <pre class="p-3 rounded-xl bg-gray-900 text-red-400 font-mono text-xs overflow-x-auto">{{ $question->options['code_snippet'] }}</pre>
+                                                </div>
+                                            @endif
+
                                             <div>
                                                 <p class="text-xs font-bold text-gray-400 uppercase mb-1">Perbaikan Kode Anda:</p>
                                                 <pre class="p-3 rounded-xl bg-gray-900 {{ $isCorrect ? 'text-green-400' : 'text-red-400' }} font-mono text-xs overflow-x-auto">{{ $textAnswer ?: '// Tidak menjawab' }}</pre>

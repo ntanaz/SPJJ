@@ -45,18 +45,22 @@ class Discussion extends Model
     {
         static::saved(function ($discussion) {
             if ($discussion->module_id) {
-                $maxOrder = \App\Models\LearningActivity::where('module_id', $discussion->module_id)->max('order_number') ?? 0;
-                
-                \App\Models\LearningActivity::updateOrCreate(
-                    ['module_id' => $discussion->module_id, 'discussion_id' => $discussion->id],
-                    [
+                $activity = \App\Models\LearningActivity::where('module_id', $discussion->module_id)
+                    ->where('discussion_id', $discussion->id)
+                    ->first();
+
+                if (!$activity) {
+                    $maxOrder = \App\Models\LearningActivity::where('module_id', $discussion->module_id)->max('order_number') ?? 0;
+                    \App\Models\LearningActivity::create([
+                        'module_id' => $discussion->module_id,
+                        'discussion_id' => $discussion->id,
                         'activity_type' => 'discussion',
                         'title' => 'Forum Diskusi: ' . $discussion->title,
                         'description' => $discussion->content,
-                        'order_number' => \App\Models\LearningActivity::where('module_id', $discussion->module_id)->where('discussion_id', $discussion->id)->value('order_number') ?: ($maxOrder + 1),
+                        'order_number' => $maxOrder + 1,
                         'is_required' => true,
-                    ]
-                );
+                    ]);
+                }
             }
         });
 

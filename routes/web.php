@@ -54,8 +54,9 @@ Route::middleware('auth')->group(function () {
         Route::resource('courses', \App\Http\Controllers\CourseController::class);
         Route::resource('materials', \App\Http\Controllers\MaterialController::class);
         Route::resource('assignments', \App\Http\Controllers\AssignmentController::class);
-        Route::resource('quizzes', \App\Http\Controllers\QuizController::class)->except(['edit', 'update']);
+        Route::resource('quizzes', \App\Http\Controllers\QuizController::class);
         Route::post('quizzes/{quiz}/questions', [\App\Http\Controllers\QuizController::class, 'storeQuestion'])->name('quizzes.questions.store');
+        Route::put('quiz-questions/{question}', [\App\Http\Controllers\QuizController::class, 'updateQuestion'])->name('quizzes.questions.update');
         Route::delete('quiz-questions/{question}', [\App\Http\Controllers\QuizController::class, 'destroyQuestion'])->name('quizzes.questions.destroy');
         
         // Learning Activities Teacher Management

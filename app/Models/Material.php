@@ -91,17 +91,23 @@ class Material extends Model
                 $steps['reflection'] = 'Refleksi Mandiri - ' . $material->title;
                 
                 foreach ($steps as $type => $title) {
-                    $maxOrder = \App\Models\LearningActivity::where('module_id', $material->module_id)->max('order_number') ?? 0;
-                    
-                    $activity = \App\Models\LearningActivity::updateOrCreate(
-                        ['module_id' => $material->module_id, 'material_id' => $material->id, 'activity_type' => $type],
-                        [
+                    $activity = \App\Models\LearningActivity::where('module_id', $material->module_id)
+                        ->where('material_id', $material->id)
+                        ->where('activity_type', $type)
+                        ->first();
+
+                    if (!$activity) {
+                        $maxOrder = \App\Models\LearningActivity::where('module_id', $material->module_id)->max('order_number') ?? 0;
+                        $activity = \App\Models\LearningActivity::create([
+                            'module_id' => $material->module_id,
+                            'material_id' => $material->id,
+                            'activity_type' => $type,
                             'title' => $title,
                             'description' => 'Aktivitas untuk ' . $material->title,
-                            'order_number' => \App\Models\LearningActivity::where('module_id', $material->module_id)->where('material_id', $material->id)->where('activity_type', $type)->value('order_number') ?: ($maxOrder + 1),
+                            'order_number' => $maxOrder + 1,
                             'is_required' => true,
-                        ]
-                    );
+                        ]);
+                    }
 
                     if ($type === 'video') {
                         $video = null;

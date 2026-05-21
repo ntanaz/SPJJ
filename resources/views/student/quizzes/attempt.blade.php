@@ -144,20 +144,50 @@
                                 
                                 <!-- 4. Fill in the Blank -->
                                 @elseif($question->question_type === 'fill_blank')
-                                    <div class="w-full">
-                                        <input type="text" name="answers[{{ $question->id }}]" placeholder="Masukkan kata kunci/kode untuk melengkapi..." class="w-full rounded-2xl border-2 border-gray-200 px-5 py-4 focus:border-amber-500 focus:ring focus:ring-amber-200 text-sm font-mono">
+                                    @php
+                                        $template = $question->options['code_template'] ?? '';
+                                        $placeholder = $question->options['blank_placeholder'] ?? '[blank]';
+                                        $inputHtml = '<input type="text" name="answers['.$question->id.']" placeholder="..." class="mx-1 px-3 py-1 bg-white border-2 border-amber-300 rounded-lg text-amber-900 font-mono text-sm focus:border-amber-500 focus:ring focus:ring-amber-200 outline-none w-48 inline-block" required>';
+                                        $escapedTemplate = e($template);
+                                        $renderedCode = str_replace(e($placeholder), $inputHtml, $escapedTemplate);
+                                    @endphp
+                                    <div class="w-full space-y-3">
+                                        <div class="p-4 bg-gray-900 text-yellow-300 rounded-2xl font-mono text-sm overflow-x-auto leading-relaxed shadow-inner">
+                                            {!! nl2br($renderedCode) !!}
+                                        </div>
+                                        <div class="text-xs text-gray-500 flex items-center justify-between">
+                                            <span>*Lengkapi bagian kosong di atas</span>
+                                            <span>Batas Percobaan: <strong class="text-gray-700">{{ $question->options['max_attempts'] ?? 3 }} kali</strong></span>
+                                        </div>
                                     </div>
 
                                 <!-- 5. Reflection -->
                                 @elseif($question->question_type === 'reflection')
                                     <div class="w-full">
-                                        <textarea name="answers[{{ $question->id }}]" rows="4" placeholder="Ketik refleksi atau pendapat bebas Anda di sini..." class="w-full rounded-2xl border-2 border-gray-200 px-5 py-4 focus:border-amber-500 focus:ring focus:ring-amber-200 text-sm font-medium"></textarea>
+                                        <textarea name="answers[{{ $question->id }}]" rows="4" placeholder="Ketik refleksi atau pendapat bebas Anda di sini..." class="w-full rounded-2xl border-2 border-gray-200 px-5 py-4 focus:border-amber-500 focus:ring focus:ring-amber-200 text-sm font-medium" required></textarea>
                                     </div>
 
                                 <!-- 6. Debugging -->
                                 @elseif($question->question_type === 'debugging')
                                     <div class="w-full space-y-4">
-                                        <textarea name="answers[{{ $question->id }}]" rows="6" placeholder="Tulis perbaikan kode pemrograman Anda di sini..." class="w-full rounded-2xl border-2 border-gray-200 bg-gray-900 text-green-400 font-mono text-sm px-5 py-4 focus:border-amber-500 focus:ring focus:ring-amber-200"></textarea>
+                                        @if(!empty($question->options['bug_description']))
+                                            <div class="p-4 bg-rose-50 border border-rose-100 rounded-2xl text-rose-800 text-sm">
+                                                <strong>Deskripsi Masalah/Bug:</strong>
+                                                <p class="mt-1 font-medium">{{ $question->options['bug_description'] }}</p>
+                                            </div>
+                                        @endif
+                                        
+                                        @if(!empty($question->options['code_snippet']))
+                                            <div class="space-y-1">
+                                                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Kode Bermasalah:</p>
+                                                <pre class="p-4 bg-gray-900 text-red-400 rounded-2xl font-mono text-sm overflow-x-auto shadow-inner">{{ $question->options['code_snippet'] }}</pre>
+                                            </div>
+                                        @endif
+                                        
+                                        <div class="space-y-2">
+                                            <label class="block text-sm font-bold text-gray-700">Tulis Kode Perbaikan Anda:</label>
+                                            <textarea name="answers[{{ $question->id }}]" rows="6" placeholder="Tulis kode pemrograman yang benar di sini..." class="w-full rounded-2xl border-2 border-gray-200 bg-gray-900 text-green-400 font-mono text-sm px-5 py-4 focus:border-amber-500 focus:ring focus:ring-amber-200 shadow-inner" required></textarea>
+                                        </div>
                                     </div>
 
                                 <!-- 7. Interactive Video -->

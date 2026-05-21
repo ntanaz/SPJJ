@@ -56,6 +56,9 @@
                                     <a href="{{ route('quizzes.show', $quiz) }}" class="px-3 py-1.5 bg-indigo-50 text-indigo-600 font-medium hover:bg-indigo-600 hover:text-white rounded-lg transition-colors shadow-sm">
                                         Kelola Soal
                                     </a>
+                                    <a href="{{ route('quizzes.edit', $quiz) }}" class="px-3 py-1.5 bg-amber-50 text-amber-650 font-medium hover:bg-amber-600 hover:text-white rounded-lg transition-colors shadow-sm">
+                                        Edit
+                                    </a>
                                     <form action="{{ route('quizzes.destroy', $quiz) }}" method="POST" class="inline-block" onsubmit="return confirm('Hapus kuis ini? Semua data ujian siswa terkait kuis ini akan hilang.');">
                                         @csrf
                                         @method('DELETE')

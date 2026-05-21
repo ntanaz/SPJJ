@@ -10,7 +10,57 @@
         </div>
     </x-slot>
 
-    <div class="py-8 max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8" x-data="{ questionType: 'multiple_choice', videoQType: 'multiple_choice' }">
+    <div class="py-8 max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8" x-data="{ 
+        questionType: '{{ session('error_edit_question_id') ? 'multiple_choice' : (old('question_type') ?: 'multiple_choice') }}', 
+        videoQType: '{{ session('error_edit_question_id') ? 'multiple_choice' : (old('video_question_type') ?: 'multiple_choice') }}', 
+        showEditModal: {{ session('error_edit_question_id') ? 'true' : 'false' }}, 
+        editQuestion: { 
+            id: {{ session('error_edit_question_id') ? (int) session('error_edit_question_id') : 'null' }}, 
+            question_type: {!! json_encode(session('error_edit_question_id') ? old('question_type', 'multiple_choice') : 'multiple_choice') !!}, 
+            question: {!! json_encode(session('error_edit_question_id') ? old('question', '') : '') !!}, 
+            points: {{ (int) (session('error_edit_question_id') ? (old('points') ?: 10) : 10) }}, 
+            feedback: {!! json_encode(session('error_edit_question_id') ? old('feedback', '') : '') !!}, 
+            correct_answer: {!! json_encode(session('error_edit_question_id') ? old('correct_answer', '') : '') !!}, 
+            options: { 
+                A: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'multiple_choice') ? old('option_a', '') : '') !!}, 
+                B: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'multiple_choice') ? old('option_b', '') : '') !!}, 
+                C: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'multiple_choice') ? old('option_c', '') : '') !!}, 
+                D: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'multiple_choice') ? old('option_d', '') : '') !!} 
+            }, 
+            video_url: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'interactive_video') ? old('video_url', '') : '') !!}, 
+            timestamp: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'interactive_video') ? old('timestamp', '') : '') !!}, 
+            video_question_type: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'interactive_video') ? old('video_question_type', 'multiple_choice') : 'multiple_choice') !!}, 
+            video_options: { 
+                A: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'interactive_video' && old('video_question_type') === 'multiple_choice') ? old('option_a', '') : '') !!}, 
+                B: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'interactive_video' && old('video_question_type') === 'multiple_choice') ? old('option_b', '') : '') !!}, 
+                C: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'interactive_video' && old('video_question_type') === 'multiple_choice') ? old('option_c', '') : '') !!}, 
+                D: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'interactive_video' && old('video_question_type') === 'multiple_choice') ? old('option_d', '') : '') !!} 
+            },
+            keywords: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'short_answer') ? old('keywords', '') : '') !!},
+            code_template: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'fill_blank') ? old('code_template', '') : '') !!},
+            blank_placeholder: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'fill_blank') ? old('blank_placeholder', '[blank]') : '[blank]') !!},
+            feedback_correct: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'fill_blank') ? old('feedback_correct', '') : '') !!},
+            feedback_incorrect: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'fill_blank') ? old('feedback_incorrect', '') : '') !!},
+            max_attempts: {{ (int) ((session('error_edit_question_id') && old('question_type') === 'fill_blank') ? (old('max_attempts') ?: 3) : 3) }},
+            code_snippet: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'debugging') ? old('code_snippet', '') : '') !!},
+            bug_description: {!! json_encode((session('error_edit_question_id') && old('question_type') === 'debugging') ? old('bug_description', '') : '') !!}
+        } 
+    }">
+        <!-- Error / Validasi -->
+        @if ($errors->any())
+            <div class="p-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl flex flex-col shadow-sm gap-2">
+                <div class="flex items-center">
+                    <svg class="w-6 h-6 mr-3 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <span class="font-bold">Gagal menyimpan data kuis. Silakan periksa kolom berikut:</span>
+                </div>
+                <ul class="list-disc list-inside text-sm pl-9 space-y-1">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <!-- Notifikasi -->
         @if(session('success'))
             <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-2xl flex items-center shadow-sm">
@@ -28,7 +78,7 @@
                         Tambah Soal Baru
                     </h3>
 
-                    <form action="{{ route('quizzes.questions.store', $quiz) }}" method="POST" class="space-y-4">
+                    <form action="{{ route('quizzes.questions.store', $quiz) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                         @csrf
 
                         <!-- Dropdown Jenis Soal -->
@@ -48,28 +98,26 @@
                         <!-- Pertanyaan -->
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">Pertanyaan / Instruksi Soal</label>
-                            <textarea name="question" rows="3" class="w-full rounded-2xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm font-medium" required placeholder="Ketik soal atau instruksi disini..."></textarea>
+                            <textarea name="question" rows="3" class="w-full rounded-2xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm font-medium" required placeholder="Ketik soal atau instruksi disini...">{{ session('error_edit_question_id') ? '' : old('question') }}</textarea>
                         </div>
-
-                        <!-- Input Spesifik per Jenis Soal -->
 
                         <!-- 1. MULTIPLE CHOICE -->
                         <div x-show="questionType === 'multiple_choice'" class="space-y-3 pt-2 border-t border-gray-100">
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Opsi A</label>
-                                <input type="text" name="option_a" x-bind:required="questionType === 'multiple_choice'" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm">
+                                <input type="text" name="option_a" :disabled="questionType !== 'multiple_choice'" x-bind:required="questionType === 'multiple_choice'" value="{{ session('error_edit_question_id') ? '' : old('option_a') }}" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Opsi B</label>
-                                <input type="text" name="option_b" x-bind:required="questionType === 'multiple_choice'" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm">
+                                <input type="text" name="option_b" :disabled="questionType !== 'multiple_choice'" x-bind:required="questionType === 'multiple_choice'" value="{{ session('error_edit_question_id') ? '' : old('option_b') }}" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Opsi C</label>
-                                <input type="text" name="option_c" x-bind:required="questionType === 'multiple_choice'" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm">
+                                <input type="text" name="option_c" :disabled="questionType !== 'multiple_choice'" x-bind:required="questionType === 'multiple_choice'" value="{{ session('error_edit_question_id') ? '' : old('option_c') }}" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Opsi D</label>
-                                <input type="text" name="option_d" x-bind:required="questionType === 'multiple_choice'" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm">
+                                <input type="text" name="option_d" :disabled="questionType !== 'multiple_choice'" x-bind:required="questionType === 'multiple_choice'" value="{{ session('error_edit_question_id') ? '' : old('option_d') }}" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm">
                             </div>
 
                             <div class="pt-2">
@@ -77,7 +125,7 @@
                                 <div class="flex gap-4">
                                     @foreach(['A', 'B', 'C', 'D'] as $opt)
                                         <label class="flex items-center gap-2 cursor-pointer p-2 border border-gray-200 rounded-lg hover:bg-indigo-50 hover:border-indigo-200 transition-colors">
-                                            <input type="radio" name="correct_answer" value="{{ $opt }}" x-bind:required="questionType === 'multiple_choice'" class="text-indigo-600 focus:ring-indigo-500">
+                                            <input type="radio" name="correct_answer" :disabled="questionType !== 'multiple_choice'" value="{{ $opt }}" x-bind:required="questionType === 'multiple_choice'" {{ (!session('error_edit_question_id') && old('correct_answer') === $opt) ? 'checked' : '' }} class="text-indigo-600 focus:ring-indigo-500">
                                             <span class="font-bold text-sm text-gray-700">{{ $opt }}</span>
                                         </label>
                                     @endforeach
@@ -90,52 +138,122 @@
                             <label class="block text-sm font-bold text-gray-700 mb-2">Pernyataan Benar atau Salah?</label>
                             <div class="flex gap-4">
                                 <label class="flex items-center gap-2 cursor-pointer p-3 border border-gray-200 rounded-xl hover:bg-indigo-50 hover:border-indigo-200 transition-colors">
-                                    <input type="radio" name="correct_answer" value="A" x-bind:required="questionType === 'true_false'" class="text-indigo-600 focus:ring-indigo-500">
+                                    <input type="radio" name="correct_answer" :disabled="questionType !== 'true_false'" value="A" x-bind:required="questionType === 'true_false'" {{ (!session('error_edit_question_id') && old('correct_answer') === 'A') ? 'checked' : '' }} class="text-indigo-600 focus:ring-indigo-500">
                                     <span class="font-bold text-sm text-gray-700">Benar</span>
                                 </label>
                                 <label class="flex items-center gap-2 cursor-pointer p-3 border border-gray-200 rounded-xl hover:bg-indigo-50 hover:border-indigo-200 transition-colors">
-                                    <input type="radio" name="correct_answer" value="B" x-bind:required="questionType === 'true_false'" class="text-indigo-600 focus:ring-indigo-500">
+                                    <input type="radio" name="correct_answer" :disabled="questionType !== 'true_false'" value="B" x-bind:required="questionType === 'true_false'" {{ (!session('error_edit_question_id') && old('correct_answer') === 'B') ? 'checked' : '' }} class="text-indigo-600 focus:ring-indigo-500">
                                     <span class="font-bold text-sm text-gray-700">Salah</span>
                                 </label>
                             </div>
                         </div>
 
                         <!-- 3. SHORT ANSWER -->
-                        <div x-show="questionType === 'short_answer'" class="pt-2 border-t border-gray-100">
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Kunci Jawaban Singkat</label>
-                            <input type="text" name="correct_answer" placeholder="Masukkan jawaban yang benar..." x-bind:required="questionType === 'short_answer'" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm">
-                            <p class="text-xs text-gray-500 mt-1">Jawaban siswa akan dicocokkan secara case-insensitive.</p>
+                        <div x-show="questionType === 'short_answer'" class="space-y-3 pt-2 border-t border-gray-100">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Kunci Jawaban Singkat</label>
+                                <input type="text" name="correct_answer" :disabled="questionType !== 'short_answer'" placeholder="Masukkan jawaban yang benar..." x-bind:required="questionType === 'short_answer'" value="{{ session('error_edit_question_id') ? '' : old('correct_answer') }}" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm">
+                                <p class="text-xs text-gray-500 mt-1">Jawaban siswa akan dicocokkan secara case-insensitive.</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Keyword Jawaban (Opsional, pisahkan dengan koma)</label>
+                                <input type="text" name="keywords" :disabled="questionType !== 'short_answer'" placeholder="Cth: py, python3, scripting" value="{{ session('error_edit_question_id') ? '' : old('keywords') }}" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm">
+                                <p class="text-xs text-gray-500 mt-1">Jika diisi, jawaban siswa yang mengandung salah satu kata kunci di atas juga akan dianggap benar.</p>
+                            </div>
                         </div>
 
                         <!-- 4. FILL IN THE BLANK (CODING) -->
-                        <div x-show="questionType === 'fill_blank'" class="pt-2 border-t border-gray-100">
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Kunci Jawaban Rumpang (Isian)</label>
-                            <input type="text" name="correct_answer" placeholder="Cth: print" x-bind:required="questionType === 'fill_blank'" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm">
-                            <p class="text-xs text-gray-500 mt-1">Gunakan kata yang tepat untuk mengisi kekosongan kode di atas.</p>
+                        <div x-show="questionType === 'fill_blank'" class="space-y-3 pt-2 border-t border-gray-100">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Code Template</label>
+                                <textarea name="code_template" :disabled="questionType !== 'fill_blank'" x-bind:required="questionType === 'fill_blank'" rows="4" placeholder="def greet(name):&#10;    [blank]('Hello ' + name)" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm font-mono">{{ session('error_edit_question_id') ? '' : old('code_template') }}</textarea>
+                                <p class="text-xs text-gray-500 mt-1">Tulis template kode di mana siswa harus mengisi bagian yang rumpang.</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Placeholder Blank</label>
+                                <input type="text" name="blank_placeholder" :disabled="questionType !== 'fill_blank'" placeholder="[blank]" value="{{ session('error_edit_question_id') ? '' : old('blank_placeholder', '[blank]') }}" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm font-mono">
+                                <p class="text-xs text-gray-500 mt-1">String penanda kekosongan pada template kode di atas (default: [blank]).</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Kunci Jawaban Rumpang (Isian Benar)</label>
+                                <input type="text" name="correct_answer" :disabled="questionType !== 'fill_blank'" placeholder="Cth: print" x-bind:required="questionType === 'fill_blank'" value="{{ session('error_edit_question_id') ? '' : old('correct_answer') }}" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm">
+                                <p class="text-xs text-gray-500 mt-1">Gunakan kata yang tepat untuk mengisi kekosongan kode di atas.</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Feedback Jawaban Benar (Opsional)</label>
+                                <textarea name="feedback_correct" :disabled="questionType !== 'fill_blank'" rows="2" placeholder="Luar biasa! Penggunaan print() sudah benar." class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm">{{ session('error_edit_question_id') ? '' : old('feedback_correct') }}</textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Feedback Jawaban Salah (Opsional)</label>
+                                <textarea name="feedback_incorrect" :disabled="questionType !== 'fill_blank'" rows="2" placeholder="Kurang tepat. Ingat fungsi bawaan Python untuk menampilkan output." class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm">{{ session('error_edit_question_id') ? '' : old('feedback_incorrect') }}</textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Batas Percobaan (Max Attempt)</label>
+                                <input type="number" name="max_attempts" :disabled="questionType !== 'fill_blank'" min="1" value="{{ session('error_edit_question_id') ? 3 : old('max_attempts', 3) }}" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm font-bold">
+                            </div>
                         </div>
 
                         <!-- 5. REFLECTION (No correct answer required) -->
+                        <div x-show="questionType === 'reflection'" class="pt-2 border-t border-gray-100">
+                            <p class="text-xs text-gray-500">Pertanyaan reflektif tidak membutuhkan kunci jawaban benar. Siswa akan mendapatkan poin penuh jika mengisi form refleksi.</p>
+                        </div>
 
                         <!-- 6. DEBUGGING -->
-                        <div x-show="questionType === 'debugging'" class="pt-2 border-t border-gray-100">
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Kunci Solusi Kode Benar</label>
-                            <textarea name="correct_answer" rows="4" placeholder="Ketik kode solusi yang benar di sini..." x-bind:required="questionType === 'debugging'" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm font-mono"></textarea>
-                            <p class="text-xs text-gray-500 mt-1">Jawaban kode siswa akan dicocokkan dengan mengabaikan whitespace.</p>
+                        <div x-show="questionType === 'debugging'" class="space-y-3 pt-2 border-t border-gray-100">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Kode Snippet Bermasalah (Buggy Code)</label>
+                                <textarea name="code_snippet" :disabled="questionType !== 'debugging'" x-bind:required="questionType === 'debugging'" rows="4" placeholder="def add(a, b)&#10;return a + b" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm font-mono">{{ session('error_edit_question_id') ? '' : old('code_snippet') }}</textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Deskripsi Bug / Masalah</label>
+                                <textarea name="bug_description" :disabled="questionType !== 'debugging'" x-bind:required="questionType === 'debugging'" rows="2" placeholder="Fungsi add() memiliki kesalahan sintaksis pada tanda titik dua dan indentasi." class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm">{{ session('error_edit_question_id') ? '' : old('bug_description') }}</textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Kunci Solusi Kode Benar</label>
+                                <textarea name="correct_answer" :disabled="questionType !== 'debugging'" rows="4" placeholder="def add(a, b):&#10;    return a + b" x-bind:required="questionType === 'debugging'" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm font-mono">{{ session('error_edit_question_id') ? '' : old('correct_answer') }}</textarea>
+                                <p class="text-xs text-gray-500 mt-1">Jawaban kode siswa akan dicocokkan dengan mengabaikan whitespace.</p>
+                            </div>
                         </div>
 
                         <!-- 7. INTERACTIVE VIDEO -->
                         <div x-show="questionType === 'interactive_video'" class="space-y-4 pt-2 border-t border-gray-100">
-                            <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-1">URL Video Pembelajaran</label>
-                                <input type="text" name="video_url" placeholder="Cth: /videos/html_intro.mp4 atau link Youtube" x-bind:required="questionType === 'interactive_video'" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm">
+                            <div class="p-3 bg-indigo-50/55 border border-indigo-100 rounded-xl space-y-2">
+                                <label class="block text-sm font-bold text-gray-700">Pilih / Unggah Video</label>
+                                <div class="space-y-2">
+                                    <label class="block text-xs font-bold text-gray-500 uppercase">Pilih Video Terunggah</label>
+                                    <select name="video_url_select" :disabled="questionType !== 'interactive_video'" class="w-full rounded-xl border-gray-300 shadow-sm text-sm">
+                                        <option value="">-- Pilih Video Pembelajaran --</option>
+                                        @foreach($uploadedVideos as $v)
+                                            <option value="{{ $v->video_path }}" {{ old('video_url_select') === $v->video_path ? 'selected' : '' }}>{{ $v->title }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="relative flex py-2 items-center">
+                                    <div class="flex-grow border-t border-gray-300"></div>
+                                    <span class="flex-shrink mx-4 text-gray-400 text-xs font-bold uppercase">Atau</span>
+                                    <div class="flex-grow border-t border-gray-300"></div>
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="block text-xs font-bold text-gray-500 uppercase">Unggah File Video Baru</label>
+                                    <input type="file" name="video_file" :disabled="questionType !== 'interactive_video'" class="w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-100 file:text-indigo-700 hover:file:bg-indigo-200">
+                                </div>
+                                <div class="relative flex py-2 items-center">
+                                    <div class="flex-grow border-t border-gray-300"></div>
+                                    <span class="flex-shrink mx-4 text-gray-400 text-xs font-bold uppercase">Atau</span>
+                                    <div class="flex-grow border-t border-gray-300"></div>
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="block text-xs font-bold text-gray-500 uppercase">Masukkan URL Video Manual</label>
+                                    <input type="text" name="video_url" :disabled="questionType !== 'interactive_video'" placeholder="Cth: /videos/html_intro.mp4 atau link Youtube" value="{{ session('error_edit_question_id') ? '' : old('video_url') }}" class="w-full rounded-xl border-gray-300 shadow-sm text-sm">
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-sm font-bold text-gray-700 mb-1">Timestamp Muncul (detik)</label>
-                                <input type="number" name="timestamp" min="0" placeholder="Cth: 45" x-bind:required="questionType === 'interactive_video'" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm">
+                                <input type="number" name="timestamp" :disabled="questionType !== 'interactive_video'" min="0" placeholder="Cth: 45" x-bind:required="questionType === 'interactive_video'" value="{{ session('error_edit_question_id') ? '' : old('timestamp') }}" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm">
                             </div>
                             <div>
                                 <label class="block text-sm font-bold text-gray-700 mb-2">Tipe Soal Video</label>
-                                <select name="video_question_type" x-model="videoQType" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm">
+                                <select name="video_question_type" :disabled="questionType !== 'interactive_video'" x-model="videoQType" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm">
                                     <option value="multiple_choice">Pilihan Ganda (MC)</option>
                                     <option value="true_false">Benar / Salah (TF)</option>
                                     <option value="short_answer">Jawaban Teks Singkat</option>
@@ -146,26 +264,26 @@
                             <div x-show="videoQType === 'multiple_choice'" class="space-y-3 pl-4 border-l-2 border-indigo-100">
                                 <div>
                                     <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Opsi A</label>
-                                    <input type="text" name="option_a" x-bind:required="questionType === 'interactive_video' && videoQType === 'multiple_choice'" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 text-sm">
+                                    <input type="text" name="option_a" :disabled="!(questionType === 'interactive_video' && videoQType === 'multiple_choice')" x-bind:required="questionType === 'interactive_video' && videoQType === 'multiple_choice'" value="{{ session('error_edit_question_id') ? '' : old('option_a') }}" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 text-sm">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Opsi B</label>
-                                    <input type="text" name="option_b" x-bind:required="questionType === 'interactive_video' && videoQType === 'multiple_choice'" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 text-sm">
+                                    <input type="text" name="option_b" :disabled="!(questionType === 'interactive_video' && videoQType === 'multiple_choice')" x-bind:required="questionType === 'interactive_video' && videoQType === 'multiple_choice'" value="{{ session('error_edit_question_id') ? '' : old('option_b') }}" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 text-sm">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Opsi C</label>
-                                    <input type="text" name="option_c" x-bind:required="questionType === 'interactive_video' && videoQType === 'multiple_choice'" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 text-sm">
+                                    <input type="text" name="option_c" :disabled="!(questionType === 'interactive_video' && videoQType === 'multiple_choice')" x-bind:required="questionType === 'interactive_video' && videoQType === 'multiple_choice'" value="{{ session('error_edit_question_id') ? '' : old('option_c') }}" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 text-sm">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Opsi D</label>
-                                    <input type="text" name="option_d" x-bind:required="questionType === 'interactive_video' && videoQType === 'multiple_choice'" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 text-sm">
+                                    <input type="text" name="option_d" :disabled="!(questionType === 'interactive_video' && videoQType === 'multiple_choice')" x-bind:required="questionType === 'interactive_video' && videoQType === 'multiple_choice'" value="{{ session('error_edit_question_id') ? '' : old('option_d') }}" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 text-sm">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-bold text-gray-700 mb-2">Jawaban Benar</label>
                                     <div class="flex gap-4">
                                         @foreach(['A', 'B', 'C', 'D'] as $opt)
                                             <label class="flex items-center gap-2 cursor-pointer p-2 border border-gray-200 rounded-lg">
-                                                <input type="radio" name="correct_answer" value="{{ $opt }}" x-bind:required="questionType === 'interactive_video' && videoQType === 'multiple_choice'" class="text-indigo-600 focus:ring-indigo-500">
+                                                <input type="radio" name="correct_answer" :disabled="!(questionType === 'interactive_video' && videoQType === 'multiple_choice')" value="{{ $opt }}" x-bind:required="questionType === 'interactive_video' && videoQType === 'multiple_choice'" {{ (!session('error_edit_question_id') && old('correct_answer') === $opt) ? 'checked' : '' }} class="text-indigo-600 focus:ring-indigo-500">
                                                 <span class="font-bold text-sm text-gray-700">{{ $opt }}</span>
                                             </label>
                                         @endforeach
@@ -178,11 +296,11 @@
                                 <label class="block text-sm font-bold text-gray-700 mb-2">Pernyataan Benar/Salah?</label>
                                 <div class="flex gap-4">
                                     <label class="flex items-center gap-2 cursor-pointer p-3 border border-gray-200 rounded-xl">
-                                        <input type="radio" name="correct_answer" value="A" x-bind:required="questionType === 'interactive_video' && videoQType === 'true_false'" class="text-indigo-600 focus:ring-indigo-500">
+                                        <input type="radio" name="correct_answer" :disabled="!(questionType === 'interactive_video' && videoQType === 'true_false')" value="A" x-bind:required="questionType === 'interactive_video' && videoQType === 'true_false'" {{ (!session('error_edit_question_id') && old('correct_answer') === 'A') ? 'checked' : '' }} class="text-indigo-600 focus:ring-indigo-500">
                                         <span class="font-bold text-sm text-gray-700">Benar</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer p-3 border border-gray-200 rounded-xl">
-                                        <input type="radio" name="correct_answer" value="B" x-bind:required="questionType === 'interactive_video' && videoQType === 'true_false'" class="text-indigo-600 focus:ring-indigo-500">
+                                        <input type="radio" name="correct_answer" :disabled="!(questionType === 'interactive_video' && videoQType === 'true_false')" value="B" x-bind:required="questionType === 'interactive_video' && videoQType === 'true_false'" {{ (!session('error_edit_question_id') && old('correct_answer') === 'B') ? 'checked' : '' }} class="text-indigo-600 focus:ring-indigo-500">
                                         <span class="font-bold text-sm text-gray-700">Salah</span>
                                     </label>
                                 </div>
@@ -191,20 +309,20 @@
                             <!-- Opsi Sub-Tipe Video Short Answer -->
                             <div x-show="videoQType === 'short_answer'" class="space-y-3 pl-4 border-l-2 border-indigo-100">
                                 <label class="block text-sm font-bold text-gray-700 mb-2">Kunci Jawaban Singkat Video</label>
-                                <input type="text" name="correct_answer" placeholder="Masukkan jawaban video..." x-bind:required="questionType === 'interactive_video' && videoQType === 'short_answer'" class="w-full rounded-xl border-gray-300 shadow-sm text-sm">
+                                <input type="text" name="correct_answer" :disabled="!(questionType === 'interactive_video' && videoQType === 'short_answer')" placeholder="Masukkan jawaban video..." x-bind:required="questionType === 'interactive_video' && videoQType === 'short_answer'" value="{{ session('error_edit_question_id') ? '' : old('correct_answer') }}" class="w-full rounded-xl border-gray-300 shadow-sm text-sm">
                             </div>
                         </div>
 
                         <!-- Feedback Pembahasan -->
                         <div class="pt-2 border-t border-gray-100">
                             <label class="block text-sm font-bold text-gray-700 mb-2">Pembahasan / Feedback Jawaban (Opsional)</label>
-                            <textarea name="feedback" rows="2" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm" placeholder="Tulis penjelasan jawaban di sini..."></textarea>
+                            <textarea name="feedback" rows="2" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm" placeholder="Tulis penjelasan jawaban di sini...">{{ session('error_edit_question_id') ? '' : old('feedback') }}</textarea>
                         </div>
 
                         <!-- Poin Soal -->
                         <div class="pt-2">
                             <label class="block text-sm font-bold text-gray-700 mb-2">Beban Nilai / Poin</label>
-                            <input type="number" name="points" min="1" value="10" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm font-bold">
+                            <input type="number" name="points" min="1" value="{{ session('error_edit_question_id') ? 10 : old('points', 10) }}" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm font-bold">
                         </div>
 
                         <div class="pt-4">
@@ -234,8 +352,38 @@
                 <div class="space-y-4">
                     @forelse($quiz->questions as $index => $question)
                         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative group">
-                            <div class="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <form action="{{ route('quizzes.questions.destroy', $question) }}" method="POST" onsubmit="return confirm('Hapus soal ini?');">
+                            <div class="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                                <button type="button" 
+                                    @click="
+                                        let q = {{ json_encode($question) }};
+                                        editQuestion = {
+                                            id: q.id,
+                                            question_type: q.question_type,
+                                            question: q.question,
+                                            points: q.points,
+                                            feedback: q.feedback,
+                                            correct_answer: q.correct_answer,
+                                            options: Object.assign({ A: '', B: '', C: '', D: '' }, q.options || {}),
+                                            video_url: (q.options && q.options.video_url) ? q.options.video_url : '',
+                                            timestamp: (q.options && q.options.timestamp) ? q.options.timestamp : '',
+                                            video_question_type: (q.options && q.options.video_question_type) ? q.options.video_question_type : 'multiple_choice',
+                                            video_options: Object.assign({ A: '', B: '', C: '', D: '' }, (q.options && q.options.options) || {}),
+                                            keywords: (q.options && q.options.keywords) ? q.options.keywords : '',
+                                            code_template: (q.options && q.options.code_template) ? q.options.code_template : '',
+                                            blank_placeholder: (q.options && q.options.blank_placeholder) ? q.options.blank_placeholder : '[blank]',
+                                            feedback_correct: (q.options && q.options.feedback_correct) ? q.options.feedback_correct : '',
+                                            feedback_incorrect: (q.options && q.options.feedback_incorrect) ? q.options.feedback_incorrect : '',
+                                            max_attempts: (q.options && q.options.max_attempts) ? q.options.max_attempts : 3,
+                                            code_snippet: (q.options && q.options.code_snippet) ? q.options.code_snippet : '',
+                                            bug_description: (q.options && q.options.bug_description) ? q.options.bug_description : ''
+                                        };
+                                        showEditModal = true;
+                                    "
+                                    class="p-2 text-amber-500 hover:bg-amber-50 rounded-lg transition-colors" 
+                                    title="Edit Soal">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                </button>
+                                <form action="{{ route('quizzes.questions.destroy', $question) }}" method="POST" onsubmit="return confirm('Hapus soal ini?');" class="inline">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Hapus Soal">
@@ -276,18 +424,67 @@
                                         </div>
                                     @endif
 
-                                    <!-- Render Short Answer / Fill Blank keys -->
-                                    @if(in_array($question->question_type, ['short_answer', 'fill_blank']))
-                                        <div class="p-3 bg-gray-50 rounded-xl border border-gray-150 text-sm font-semibold text-gray-700 mb-4">
-                                            Kunci Jawaban Benar: <span class="text-indigo-600 font-mono">{{ $question->correct_answer }}</span>
+                                    <!-- Render Short Answer -->
+                                    @if($question->question_type === 'short_answer')
+                                        <div class="space-y-2 mb-4">
+                                            <div class="p-3 bg-gray-50 rounded-xl border border-gray-150 text-sm font-semibold text-gray-700">
+                                                Kunci Jawaban Benar: <span class="text-indigo-600 font-mono">{{ $question->correct_answer }}</span>
+                                            </div>
+                                            @if(!empty($question->options['keywords']))
+                                                <div class="p-3 bg-gray-50 rounded-xl border border-gray-150 text-sm text-gray-600">
+                                                    Keywords: <span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded font-mono text-xs">{{ $question->options['keywords'] }}</span>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endif
+
+                                    <!-- Render Fill Blank -->
+                                    @if($question->question_type === 'fill_blank')
+                                        <div class="space-y-2 mb-4">
+                                            <div class="p-3 bg-gray-50 rounded-xl border border-gray-150 text-sm font-semibold text-gray-700">
+                                                Kunci Jawaban Rumpang: <span class="text-indigo-600 font-mono">{{ $question->correct_answer }}</span>
+                                            </div>
+                                            @if(!empty($question->options['code_template']))
+                                                <div class="space-y-1">
+                                                    <p class="text-xs font-bold text-gray-400 uppercase">Template Kode:</p>
+                                                    <pre class="p-3 bg-gray-900 text-yellow-300 rounded-xl font-mono text-xs overflow-x-auto">{{ $question->options['code_template'] }}</pre>
+                                                </div>
+                                            @endif
+                                            <div class="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                                                <div>Placeholder: <span class="font-mono bg-gray-100 px-1.5 py-0.5 rounded text-gray-700">{{ $question->options['blank_placeholder'] ?? '[blank]' }}</span></div>
+                                                <div>Batas Percobaan: <span class="font-bold text-gray-700">{{ $question->options['max_attempts'] ?? 3 }} kali</span></div>
+                                            </div>
+                                            @if(!empty($question->options['feedback_correct']))
+                                                <div class="p-2.5 bg-emerald-50 border border-emerald-100 text-emerald-800 text-xs rounded-xl">
+                                                    <strong>Feedback Benar:</strong> {{ $question->options['feedback_correct'] }}
+                                                </div>
+                                            @endif
+                                            @if(!empty($question->options['feedback_incorrect']))
+                                                <div class="p-2.5 bg-red-50 border border-red-100 text-red-800 text-xs rounded-xl">
+                                                    <strong>Feedback Salah:</strong> {{ $question->options['feedback_incorrect'] }}
+                                                </div>
+                                            @endif
                                         </div>
                                     @endif
 
                                     <!-- Render Debugging solutions -->
                                     @if($question->question_type === 'debugging')
-                                        <div class="space-y-2 mb-4">
-                                            <p class="text-xs font-bold text-gray-400 uppercase">Kunci Solusi Benar:</p>
-                                            <pre class="p-3 bg-gray-900 text-green-400 rounded-xl font-mono text-xs overflow-x-auto">{{ $question->correct_answer }}</pre>
+                                        <div class="space-y-3 mb-4">
+                                            @if(!empty($question->options['bug_description']))
+                                                <div class="p-3 bg-rose-50 border border-rose-100 rounded-xl text-rose-800 text-sm">
+                                                    <strong>Deskripsi Bug:</strong> {{ $question->options['bug_description'] }}
+                                                </div>
+                                            @endif
+                                            @if(!empty($question->options['code_snippet']))
+                                                <div class="space-y-1">
+                                                    <p class="text-xs font-bold text-gray-400 uppercase">Kode Bermasalah (Buggy):</p>
+                                                    <pre class="p-3 bg-gray-900 text-red-400 rounded-xl font-mono text-xs overflow-x-auto">{{ $question->options['code_snippet'] }}</pre>
+                                                </div>
+                                            @endif
+                                            <div class="space-y-1">
+                                                <p class="text-xs font-bold text-gray-400 uppercase">Kunci Solusi Benar:</p>
+                                                <pre class="p-3 bg-gray-900 text-green-400 rounded-xl font-mono text-xs overflow-x-auto">{{ $question->correct_answer }}</pre>
+                                            </div>
                                         </div>
                                     @endif
 
@@ -307,6 +504,20 @@
                                             <p class="text-xs text-purple-700">Tipe Popup: <span class="font-bold uppercase">{{ $question->options['video_question_type'] ?? '' }}</span></p>
                                             <p class="text-xs text-purple-700">Kunci Jawaban: <span class="font-mono bg-white px-2 py-0.5 rounded">{{ $question->correct_answer }}</span></p>
                                         </div>
+                                        @if(in_array($question->options['video_question_type'] ?? '', ['multiple_choice', 'true_false']))
+                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                                                @foreach(($question->options['options'] ?? []) as $key => $text)
+                                                    <div class="flex items-center gap-3 p-3 rounded-xl border {{ $question->correct_answer === $key ? 'border-emerald-500 bg-emerald-50 ring-2 ring-emerald-200' : 'border-gray-200 bg-white' }}">
+                                                        <span class="w-6 h-6 flex items-center justify-center rounded-md text-xs font-bold {{ $question->correct_answer === $key ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-500' }}">
+                                                            {{ $key }}
+                                                        </span>
+                                                        <span class="text-sm font-medium {{ $question->correct_answer === $key ? 'text-emerald-800' : 'text-gray-600' }}">
+                                                            {{ $text }}
+                                                        </span>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @endif
                                     @endif
 
                                     @if($question->feedback)
@@ -327,6 +538,282 @@
                         </div>
                     @endforelse
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edit Soal -->
+    <div x-show="showEditModal" 
+         class="fixed inset-0 z-50 overflow-y-auto" 
+         style="display: none;" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0">
+        
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="showEditModal = false"></div>
+
+        <!-- Modal Content -->
+        <div class="flex min-h-screen items-center justify-center p-4 text-center sm:p-0">
+            <div class="relative transform overflow-hidden rounded-3xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg p-6 space-y-4"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
+                
+                <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                    <h3 class="text-lg font-bold text-gray-900">Edit Soal</h3>
+                    <button type="button" @click="showEditModal = false" class="text-gray-400 hover:text-gray-500">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+
+                <form :action="'{{ route('quizzes.questions.update', '__ID__') }}'.replace('__ID__', editQuestion.id)" method="POST" enctype="multipart/form-data" class="space-y-4 text-left">
+                    @csrf
+                    @method('PUT')
+
+                    <input type="hidden" name="question_type" :value="editQuestion.question_type">
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Tipe Soal</label>
+                        <span class="px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700 text-sm font-bold block uppercase" x-text="editQuestion.question_type.replace('_', ' ')"></span>
+                    </div>
+
+                    <!-- Pertanyaan -->
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Pertanyaan / Instruksi Soal</label>
+                        <textarea name="question" rows="3" x-model="editQuestion.question" class="w-full rounded-2xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 text-sm font-medium" required></textarea>
+                    </div>
+
+                    <!-- 1. MULTIPLE CHOICE -->
+                    <div x-show="editQuestion.question_type === 'multiple_choice'" class="space-y-3 pt-2 border-t border-gray-100">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Opsi A</label>
+                            <input type="text" name="option_a" :disabled="editQuestion.question_type !== 'multiple_choice'" x-model="editQuestion.options.A" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Opsi B</label>
+                            <input type="text" name="option_b" :disabled="editQuestion.question_type !== 'multiple_choice'" x-model="editQuestion.options.B" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Opsi C</label>
+                            <input type="text" name="option_c" :disabled="editQuestion.question_type !== 'multiple_choice'" x-model="editQuestion.options.C" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Opsi D</label>
+                            <input type="text" name="option_d" :disabled="editQuestion.question_type !== 'multiple_choice'" x-model="editQuestion.options.D" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 text-sm">
+                        </div>
+
+                        <div class="pt-2">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Jawaban Benar</label>
+                            <div class="flex gap-4">
+                                <template x-for="opt in ['A', 'B', 'C', 'D']">
+                                    <label class="flex items-center gap-2 cursor-pointer p-2 border border-gray-200 rounded-lg">
+                                        <input type="radio" name="correct_answer" :disabled="editQuestion.question_type !== 'multiple_choice'" :value="opt" x-model="editQuestion.correct_answer" class="text-indigo-600 focus:ring-indigo-500">
+                                        <span class="font-bold text-sm text-gray-700" x-text="opt"></span>
+                                    </label>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. TRUE OR FALSE -->
+                    <div x-show="editQuestion.question_type === 'true_false'" class="pt-2 border-t border-gray-100">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Pernyataan Benar atau Salah?</label>
+                        <div class="flex gap-4">
+                            <label class="flex items-center gap-2 cursor-pointer p-3 border border-gray-200 rounded-xl">
+                                <input type="radio" name="correct_answer" :disabled="editQuestion.question_type !== 'true_false'" value="A" x-model="editQuestion.correct_answer" class="text-indigo-600 focus:ring-indigo-500">
+                                <span class="font-bold text-sm text-gray-700">Benar</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer p-3 border border-gray-200 rounded-xl">
+                                <input type="radio" name="correct_answer" :disabled="editQuestion.question_type !== 'true_false'" value="B" x-model="editQuestion.correct_answer" class="text-indigo-600 focus:ring-indigo-500">
+                                <span class="font-bold text-sm text-gray-700">Salah</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 3. SHORT ANSWER -->
+                    <div x-show="editQuestion.question_type === 'short_answer'" class="space-y-3 pt-2 border-t border-gray-100">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Kunci Jawaban Singkat</label>
+                            <input type="text" name="correct_answer" :disabled="editQuestion.question_type !== 'short_answer'" placeholder="Masukkan jawaban yang benar..." x-model="editQuestion.correct_answer" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 text-sm">
+                            <p class="text-xs text-gray-500 mt-1">Jawaban siswa akan dicocokkan secara case-insensitive.</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Keyword Jawaban (Opsional, pisahkan dengan koma)</label>
+                            <input type="text" name="keywords" :disabled="editQuestion.question_type !== 'short_answer'" placeholder="Cth: py, python3, scripting" x-model="editQuestion.keywords" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 text-sm">
+                            <p class="text-xs text-gray-500 mt-1">Jika diisi, jawaban siswa yang mengandung salah satu kata kunci di atas juga akan dianggap benar.</p>
+                        </div>
+                    </div>
+
+                    <!-- 4. FILL IN THE BLANK (CODING) -->
+                    <div x-show="editQuestion.question_type === 'fill_blank'" class="space-y-3 pt-2 border-t border-gray-100">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Code Template</label>
+                            <textarea name="code_template" :disabled="editQuestion.question_type !== 'fill_blank'" x-model="editQuestion.code_template" rows="4" placeholder="def greet(name):&#10;    [blank]('Hello ' + name)" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 text-sm font-mono"></textarea>
+                            <p class="text-xs text-gray-500 mt-1">Tulis template kode di mana siswa harus mengisi bagian yang rumpang.</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Placeholder Blank</label>
+                            <input type="text" name="blank_placeholder" :disabled="editQuestion.question_type !== 'fill_blank'" placeholder="[blank]" x-model="editQuestion.blank_placeholder" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 text-sm font-mono">
+                            <p class="text-xs text-gray-500 mt-1">String penanda kekosongan pada template kode di atas (default: [blank]).</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Kunci Jawaban Rumpang (Isian Benar)</label>
+                            <input type="text" name="correct_answer" :disabled="editQuestion.question_type !== 'fill_blank'" placeholder="Cth: print" x-model="editQuestion.correct_answer" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 text-sm">
+                            <p class="text-xs text-gray-500 mt-1">Gunakan kata yang tepat untuk mengisi kekosongan kode di atas.</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Feedback Jawaban Benar (Opsional)</label>
+                            <textarea name="feedback_correct" :disabled="editQuestion.question_type !== 'fill_blank'" rows="2" placeholder="Luar biasa! Penggunaan print() sudah benar." x-model="editQuestion.feedback_correct" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 text-sm"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Feedback Jawaban Salah (Opsional)</label>
+                            <textarea name="feedback_incorrect" :disabled="editQuestion.question_type !== 'fill_blank'" rows="2" placeholder="Kurang tepat. Ingat fungsi bawaan Python untuk menampilkan output." x-model="editQuestion.feedback_incorrect" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 text-sm"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Batas Percobaan (Max Attempt)</label>
+                            <input type="number" name="max_attempts" :disabled="editQuestion.question_type !== 'fill_blank'" min="1" x-model="editQuestion.max_attempts" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 text-sm font-bold">
+                        </div>
+                    </div>
+
+                    <!-- 6. DEBUGGING -->
+                    <div x-show="editQuestion.question_type === 'debugging'" class="space-y-3 pt-2 border-t border-gray-100">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Kode Snippet Bermasalah (Buggy Code)</label>
+                            <textarea name="code_snippet" :disabled="editQuestion.question_type !== 'debugging'" x-model="editQuestion.code_snippet" rows="4" placeholder="def add(a, b)&#10;return a + b" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 text-sm font-mono"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Deskripsi Bug / Masalah</label>
+                            <textarea name="bug_description" :disabled="editQuestion.question_type !== 'debugging'" x-model="editQuestion.bug_description" rows="2" placeholder="Fungsi add() memiliki kesalahan sintaksis pada tanda titik dua dan indentasi." class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 text-sm"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Kunci Solusi Kode Benar</label>
+                            <textarea name="correct_answer" :disabled="editQuestion.question_type !== 'debugging'" rows="4" x-model="editQuestion.correct_answer" placeholder="def add(a, b):&#10;    return a + b" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 text-sm font-mono"></textarea>
+                            <p class="text-xs text-gray-500 mt-1">Jawaban kode siswa akan dicocokkan dengan mengabaikan whitespace.</p>
+                        </div>
+                    </div>
+
+                    <!-- 7. INTERACTIVE VIDEO -->
+                    <div x-show="editQuestion.question_type === 'interactive_video'" class="space-y-4 pt-2 border-t border-gray-100">
+                        <div class="p-3 bg-indigo-50/55 border border-indigo-100 rounded-xl space-y-2">
+                            <label class="block text-sm font-bold text-gray-700">Pilih / Unggah Video</label>
+                            <div class="space-y-2">
+                                <label class="block text-xs font-bold text-gray-500 uppercase">Pilih Video Terunggah</label>
+                                <select name="video_url_select" :disabled="editQuestion.question_type !== 'interactive_video'" class="w-full rounded-xl border-gray-300 shadow-sm text-sm">
+                                    <option value="">-- Pilih Video Pembelajaran --</option>
+                                    @foreach($uploadedVideos as $v)
+                                        <option value="{{ $v->video_path }}">{{ $v->title }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="relative flex py-2 items-center">
+                                <div class="flex-grow border-t border-gray-300"></div>
+                                <span class="flex-shrink mx-4 text-gray-400 text-xs font-bold uppercase">Atau</span>
+                                <div class="flex-grow border-t border-gray-300"></div>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-xs font-bold text-gray-500 uppercase">Unggah File Video Baru</label>
+                                <input type="file" name="video_file" :disabled="editQuestion.question_type !== 'interactive_video'" class="w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-100 file:text-indigo-700 hover:file:bg-indigo-200">
+                            </div>
+                            <div class="relative flex py-2 items-center">
+                                <div class="flex-grow border-t border-gray-300"></div>
+                                <span class="flex-shrink mx-4 text-gray-400 text-xs font-bold uppercase">Atau</span>
+                                <div class="flex-grow border-t border-gray-300"></div>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-xs font-bold text-gray-500 uppercase">Masukkan URL Video Manual</label>
+                                <input type="text" name="video_url" :disabled="editQuestion.question_type !== 'interactive_video'" x-model="editQuestion.video_url" placeholder="Cth: /videos/html_intro.mp4 atau link Youtube" class="w-full rounded-xl border-gray-300 shadow-sm text-sm">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Timestamp Muncul (detik)</label>
+                            <input type="number" name="timestamp" :disabled="editQuestion.question_type !== 'interactive_video'" x-model="editQuestion.timestamp" min="0" placeholder="Cth: 45" class="w-full rounded-xl border-gray-300 shadow-sm text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Tipe Soal Video</label>
+                            <select name="video_question_type" :disabled="editQuestion.question_type !== 'interactive_video'" x-model="editQuestion.video_question_type" class="w-full rounded-xl border-gray-300 shadow-sm text-sm">
+                                <option value="multiple_choice">Pilihan Ganda (MC)</option>
+                                <option value="true_false">Benar / Salah (TF)</option>
+                                <option value="short_answer">Jawaban Teks Singkat</option>
+                            </select>
+                        </div>
+
+                        <!-- Opsi Sub-Tipe Video MC -->
+                        <div x-show="editQuestion.video_question_type === 'multiple_choice'" class="space-y-3 pl-4 border-l-2 border-indigo-100">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Opsi A</label>
+                                <input type="text" name="option_a" :disabled="!(editQuestion.question_type === 'interactive_video' && editQuestion.video_question_type === 'multiple_choice')" x-model="editQuestion.video_options.A" class="w-full rounded-xl border-gray-300 shadow-sm text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Opsi B</label>
+                                <input type="text" name="option_b" :disabled="!(editQuestion.question_type === 'interactive_video' && editQuestion.video_question_type === 'multiple_choice')" x-model="editQuestion.video_options.B" class="w-full rounded-xl border-gray-300 shadow-sm text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Opsi C</label>
+                                <input type="text" name="option_c" :disabled="!(editQuestion.question_type === 'interactive_video' && editQuestion.video_question_type === 'multiple_choice')" x-model="editQuestion.video_options.C" class="w-full rounded-xl border-gray-300 shadow-sm text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Opsi D</label>
+                                <input type="text" name="option_d" :disabled="!(editQuestion.question_type === 'interactive_video' && editQuestion.video_question_type === 'multiple_choice')" x-model="editQuestion.video_options.D" class="w-full rounded-xl border-gray-300 shadow-sm text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Jawaban Benar</label>
+                                <div class="flex gap-4">
+                                    <template x-for="opt in ['A', 'B', 'C', 'D']">
+                                        <label class="flex items-center gap-2 cursor-pointer p-2 border border-gray-200 rounded-lg">
+                                            <input type="radio" name="correct_answer" :disabled="!(editQuestion.question_type === 'interactive_video' && editQuestion.video_question_type === 'multiple_choice')" :value="opt" x-model="editQuestion.correct_answer" class="text-indigo-600 focus:ring-indigo-500">
+                                            <span class="font-bold text-sm text-gray-700" x-text="opt"></span>
+                                        </label>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Opsi Sub-Tipe Video TF -->
+                        <div x-show="editQuestion.video_question_type === 'true_false'" class="space-y-3 pl-4 border-l-2 border-indigo-100">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Pernyataan Benar/Salah?</label>
+                            <div class="flex gap-4">
+                                <label class="flex items-center gap-2 cursor-pointer p-3 border border-gray-200 rounded-xl">
+                                    <input type="radio" name="correct_answer" :disabled="!(editQuestion.question_type === 'interactive_video' && editQuestion.video_question_type === 'true_false')" value="A" x-model="editQuestion.correct_answer" class="text-indigo-600 focus:ring-indigo-500">
+                                    <span class="font-bold text-sm text-gray-700">Benar</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer p-3 border border-gray-200 rounded-xl">
+                                    <input type="radio" name="correct_answer" :disabled="!(editQuestion.question_type === 'interactive_video' && editQuestion.video_question_type === 'true_false')" value="B" x-model="editQuestion.correct_answer" class="text-indigo-600 focus:ring-indigo-500">
+                                    <span class="font-bold text-sm text-gray-700">Salah</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Opsi Sub-Tipe Video Short Answer -->
+                        <div x-show="editQuestion.video_question_type === 'short_answer'" class="space-y-3 pl-4 border-l-2 border-indigo-100">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Kunci Jawaban Singkat Video</label>
+                            <input type="text" name="correct_answer" :disabled="!(editQuestion.question_type === 'interactive_video' && editQuestion.video_question_type === 'short_answer')" x-model="editQuestion.correct_answer" placeholder="Masukkan jawaban video..." class="w-full rounded-xl border-gray-300 shadow-sm text-sm">
+                        </div>
+                    </div>
+
+                    <!-- Feedback Pembahasan -->
+                    <div class="pt-2 border-t border-gray-100">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Pembahasan / Feedback Jawaban (Opsional)</label>
+                        <textarea name="feedback" rows="2" x-model="editQuestion.feedback" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 text-sm" placeholder="Tulis penjelasan jawaban di sini..."></textarea>
+                    </div>
+
+                    <!-- Poin Soal -->
+                    <div class="pt-2">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Beban Nilai / Poin</label>
+                        <input type="number" name="points" min="1" x-model="editQuestion.points" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 text-sm font-bold">
+                    </div>
+
+                    <div class="pt-4 flex justify-end gap-2 border-t border-gray-100">
+                        <button type="button" @click="showEditModal = false" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-bold rounded-xl">Batal</button>
+                        <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl shadow-sm transition-transform active:scale-95">Simpan Perubahan</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

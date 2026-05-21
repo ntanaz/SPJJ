@@ -49,8 +49,8 @@
                             <div class="space-y-6">
                                 <div class="border-b border-gray-100 pb-4 text-left">
                                     <span class="text-xs font-bold text-indigo-600 uppercase tracking-widest">Langkah DL: Stimulation & Problem Statement</span>
-                                    <h3 class="text-2xl font-black text-gray-800 mt-1">Peta Pikiran (Mind Map)</h3>
-                                    <p class="text-gray-500 text-sm mt-1">Pahami peta pikiran di bawah ini untuk merangsang pemikiran kritis Anda mengenai konsep materi.</p>
+                                    <h3 class="text-2xl font-black text-gray-800 mt-1">{{ $activity->title }}</h3>
+                                    <p class="text-gray-500 text-sm mt-1">{{ $activity->description ?: 'Pahami peta pikiran di bawah ini untuk merangsang pemikiran kritis Anda mengenai konsep materi.' }}</p>
                                 </div>
                                 <div class="bg-gray-50 rounded-3xl p-4 flex items-center justify-center border border-gray-150 overflow-hidden">
                                     @if($material->mind_map_path)
@@ -69,8 +69,8 @@
                             <div class="space-y-6 text-left">
                                 <div class="border-b border-gray-100 pb-4">
                                     <span class="text-xs font-bold text-indigo-600 uppercase tracking-widest">Langkah DL: Data Collection (Pengumpulan Data)</span>
-                                    <h3 class="text-2xl font-black text-gray-800 mt-1">Modul Pembelajaran Utama</h3>
-                                    <p class="text-gray-500 text-sm mt-1">Bacalah artikel materi di bawah ini dengan saksama.</p>
+                                    <h3 class="text-2xl font-black text-gray-800 mt-1">{{ $activity->title }}</h3>
+                                    <p class="text-gray-500 text-sm mt-1">{{ $activity->description ?: 'Bacalah artikel materi di bawah ini dengan saksama.' }}</p>
                                 </div>
                                 <div class="bg-gray-50 rounded-3xl p-6 border border-gray-100 leading-relaxed text-gray-700">
                                     @if($material->text_content)
@@ -120,8 +120,8 @@
                             <div class="space-y-6">
                                 <div class="border-b border-gray-100 pb-4 text-left">
                                     <span class="text-xs font-bold text-indigo-600 uppercase tracking-widest">Langkah DL: Data Processing (Pengolahan Data)</span>
-                                    <h3 class="text-2xl font-black text-gray-800 mt-1">Video Pembelajaran & Kuis Pop-Up</h3>
-                                    <p class="text-gray-500 text-sm mt-1">Tonton video interaktif berikut. Jawab setiap pertanyaan pop-up kuis yang muncul di menit tertentu.</p>
+                                    <h3 class="text-2xl font-black text-gray-800 mt-1">{{ $activity->title }}</h3>
+                                    <p class="text-gray-500 text-sm mt-1">{{ $activity->description ?: 'Tonton video interaktif berikut. Jawab setiap pertanyaan pop-up kuis yang muncul di menit tertentu.' }}</p>
                                 </div>
 
                                 @php
@@ -208,8 +208,8 @@
                             <div class="space-y-6 text-left">
                                 <div class="border-b border-gray-100 pb-4">
                                     <span class="text-xs font-bold text-indigo-600 uppercase tracking-widest">Langkah DL: Verification (Pembuktian)</span>
-                                    <h3 class="text-2xl font-black text-gray-800 mt-1">Kuis Koding & Pembuktian</h3>
-                                    <p class="text-gray-500 text-sm mt-1">Selesaikan kuis koding berikut untuk membuktikan pemahaman program Anda.</p>
+                                    <h3 class="text-2xl font-black text-gray-800 mt-1">{{ $activity->title }}</h3>
+                                    <p class="text-gray-500 text-sm mt-1">{{ $activity->description ?: 'Selesaikan kuis koding berikut untuk membuktikan pemahaman program Anda.' }}</p>
                                 </div>
 
                                 @if($codingQuiz)
@@ -318,8 +318,8 @@
                             <div class="space-y-6 text-left">
                                 <div class="border-b border-gray-100 pb-4">
                                     <span class="text-xs font-bold text-indigo-600 uppercase tracking-widest">Langkah DL: Generalization (Generalisasi)</span>
-                                    <h3 class="text-2xl font-black text-gray-800 mt-1">Refleksi Koding & Analisis</h3>
-                                    <p class="text-gray-500 text-sm mt-1">Tuliskan kesimpulan, analisis logika program, dan refleksi pembelajaran Anda pada bab ini.</p>
+                                    <h3 class="text-2xl font-black text-gray-800 mt-1">{{ $activity->title }}</h3>
+                                    <p class="text-gray-500 text-sm mt-1">{{ $activity->description ?: 'Tuliskan kesimpulan, analisis logika program, dan refleksi pembelajaran Anda pada bab ini.' }}</p>
                                 </div>
 
                                 @if($isCompleted)

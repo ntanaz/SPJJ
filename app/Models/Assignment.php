@@ -36,18 +36,22 @@ class Assignment extends Model
     {
         static::saved(function ($assignment) {
             if ($assignment->module_id) {
-                $maxOrder = \App\Models\LearningActivity::where('module_id', $assignment->module_id)->max('order_number') ?? 0;
-                
-                \App\Models\LearningActivity::updateOrCreate(
-                    ['module_id' => $assignment->module_id, 'assignment_id' => $assignment->id],
-                    [
+                $activity = \App\Models\LearningActivity::where('module_id', $assignment->module_id)
+                    ->where('assignment_id', $assignment->id)
+                    ->first();
+
+                if (!$activity) {
+                    $maxOrder = \App\Models\LearningActivity::where('module_id', $assignment->module_id)->max('order_number') ?? 0;
+                    \App\Models\LearningActivity::create([
+                        'module_id' => $assignment->module_id,
+                        'assignment_id' => $assignment->id,
                         'activity_type' => 'assignment',
                         'title' => 'Tugas: ' . $assignment->title,
                         'description' => $assignment->description,
-                        'order_number' => \App\Models\LearningActivity::where('module_id', $assignment->module_id)->where('assignment_id', $assignment->id)->value('order_number') ?: ($maxOrder + 1),
+                        'order_number' => $maxOrder + 1,
                         'is_required' => true,
-                    ]
-                );
+                    ]);
+                }
             }
         });
 

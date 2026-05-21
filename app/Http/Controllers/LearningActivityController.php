@@ -186,9 +186,6 @@ class LearningActivityController extends Controller
         return back()->with('success', 'Aktivitas berhasil ditambahkan ke Bab ini.');
     }
 
-    /**
-     * Update an activity (for Teacher/Admin).
-     */
     public function update(Request $request, LearningActivity $activity)
     {
         $request->validate([
@@ -198,12 +195,56 @@ class LearningActivityController extends Controller
             'is_required' => 'boolean',
         ]);
 
+        $newOrder = (int)$request->order_number;
+        $oldOrder = (int)$activity->order_number;
+
+        if ($newOrder !== $oldOrder) {
+            // Shift others to accommodate
+            if ($newOrder < $oldOrder) {
+                // Moving up (e.g. from 3 to 1)
+                LearningActivity::where('module_id', $activity->module_id)
+                    ->where('id', '!=', $activity->id)
+                    ->where('order_number', '>=', $newOrder)
+                    ->where('order_number', '<', $oldOrder)
+                    ->increment('order_number');
+            } else {
+                // Moving down (e.g. from 1 to 3)
+                LearningActivity::where('module_id', $activity->module_id)
+                    ->where('id', '!=', $activity->id)
+                    ->where('order_number', '<=', $newOrder)
+                    ->where('order_number', '>', $oldOrder)
+                    ->decrement('order_number');
+            }
+        }
+
         $activity->update([
             'title' => $request->title,
             'description' => $request->description,
-            'order_number' => $request->order_number,
+            'order_number' => $newOrder,
             'is_required' => $request->has('is_required'),
         ]);
+
+        // Sync with underlying models
+        if ($activity->quiz_id) {
+            \App\Models\Quiz::where('id', $activity->quiz_id)->update([
+                'title' => $request->title,
+                'description' => $request->description,
+            ]);
+        } elseif ($activity->assignment_id) {
+            \App\Models\Assignment::where('id', $activity->assignment_id)->update([
+                'title' => $request->title,
+                'description' => $request->description,
+            ]);
+        } elseif ($activity->discussion_id) {
+            \App\Models\Discussion::where('id', $activity->discussion_id)->update([
+                'title' => $request->title,
+                'content' => $request->description ?: '',
+            ]);
+        } elseif ($activity->video_id) {
+            \App\Models\Video::where('id', $activity->video_id)->update([
+                'title' => $request->title,
+            ]);
+        }
 
         // If order number changed, reorder other items in module to keep sequence clean
         $this->resolveOrderGaps($activity->module_id);

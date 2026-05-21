@@ -96,7 +96,19 @@ class StudentQuizController extends Controller
             if ($type === 'multiple_choice' || $type === 'true_false') {
                 $selectedOption = $selected;
                 $isCorrect = strtolower(trim($selectedOption)) === strtolower(trim($question->correct_answer));
-            } elseif ($type === 'short_answer' || $type === 'fill_blank') {
+            } elseif ($type === 'short_answer') {
+                $textAnswer = $selected;
+                $isCorrect = strtolower(trim($textAnswer)) === strtolower(trim($question->correct_answer));
+                if (!$isCorrect && !empty($question->options['keywords'])) {
+                    $keywords = array_map('trim', explode(',', $question->options['keywords']));
+                    foreach ($keywords as $keyword) {
+                        if ($keyword !== '' && stripos($textAnswer, $keyword) !== false) {
+                            $isCorrect = true;
+                            break;
+                        }
+                    }
+                }
+            } elseif ($type === 'fill_blank') {
                 $textAnswer = $selected;
                 $isCorrect = strtolower(trim($textAnswer)) === strtolower(trim($question->correct_answer));
             } elseif ($type === 'reflection') {

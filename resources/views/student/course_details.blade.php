@@ -126,7 +126,11 @@
                                     <div class="flex items-center gap-3" @click.stop>
                                         @role('guru|teacher|admin')
                                             <!-- Edit & Delete buttons -->
-                                            <button @click="activeModule = { id: {{ $module->id }}, title: '{{ addslashes($module->title) }}', description: '{{ addslashes($module->description) }}', order_number: {{ $module->order_number }} }; editModuleModal = true;" 
+                                            <button data-id="{{ $module->id }}"
+                                                    data-title="{{ $module->title }}"
+                                                    data-description="{{ $module->description }}"
+                                                    data-order="{{ $module->order_number }}"
+                                                    @click="activeModule = { id: $el.dataset.id, title: $el.dataset.title, description: $el.dataset.description, order_number: $el.dataset.order }; editModuleModal = true;" 
                                                     class="p-2 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded-lg transition-colors">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                                             </button>
@@ -196,7 +200,12 @@
                                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                                                                 </a>
                                                             @endif
-                                                            <button @click="activeActivity = { id: {{ $activity->id }}, title: '{{ addslashes($activity->title) }}', description: '{{ addslashes($activity->description) }}', order_number: {{ $activity->order_number }}, is_required: {{ $activity->is_required ? 'true' : 'false' }} }; editActivityModal = true;" 
+                                                            <button data-id="{{ $activity->id }}"
+                                                                    data-title="{{ $activity->title }}"
+                                                                    data-description="{{ $activity->description }}"
+                                                                    data-order="{{ $activity->order_number }}"
+                                                                    data-required="{{ $activity->is_required ? 'true' : 'false' }}"
+                                                                    @click="activeActivity = { id: $el.dataset.id, title: $el.dataset.title, description: $el.dataset.description, order_number: $el.dataset.order, is_required: $el.dataset.required === 'true' }; editActivityModal = true;" 
                                                                     class="p-1.5 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded-lg transition-colors" title="Edit">
                                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                                                             </button>

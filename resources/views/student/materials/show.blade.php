@@ -629,18 +629,19 @@
             return {
                 questions: {!! json_encode($material->interactiveVideoQuestions->map(fn($q) => [
                     'id'             => $q->id,
-                    'timestamp'      => $q->timestamp,
+                    'timestamp'      => (int)$q->timestamp,
                     'question_type'  => $q->question_type ?? 'multiple_choice',
                     'question'       => $q->question,
                     'options'        => $q->options ?? [],
                     'correct_answer' => $q->correct_answer,
+                    'shown'          => false,
                 ])) !!},
                 showQuizModal:        false,
                 activeQuestion:       { question: '', options: [], question_type: 'multiple_choice' },
                 selectedAnswer:       '',
                 questionFeedback:     '',
                 isAnswerCorrect:      false,
-                answeredQuestionIds:  {!! json_encode(\App\Models\VideoParticipationTracking::where('material_id', $material->id)->where('user_id', auth()->id())->pluck('question_id')) !!},
+                answeredQuestionIds:  {!! json_encode(\App\Models\VideoParticipationTracking::where('material_id', $material->id)->where('user_id', auth()->id())->pluck('question_id')->map('intval')->toArray()) !!},
                 lastTriggeredTime:    -1,
                 checkInterval:        null,
                 player:               null,
@@ -695,11 +696,22 @@
                 },
 
                 checkVideoTime(currentTime) {
-                    const t = Math.floor(currentTime);
-                    if (t === this.lastTriggeredTime) return;
-                    const match = this.questions.find(q => q.timestamp === t);
-                    if (match && !this.answeredQuestionIds.includes(match.id)) {
-                        this.lastTriggeredTime = t;
+                    if (this.showQuizModal) return;
+
+                    // Reset shown flag for questions ahead of current time in case student rewound
+                    this.questions.forEach(q => {
+                        if (currentTime < Number(q.timestamp)) {
+                            q.shown = false;
+                        }
+                    });
+
+                    const match = this.questions.find(q => {
+                        const qTime = Number(q.timestamp);
+                        return currentTime >= qTime && !this.answeredQuestionIds.includes(Number(q.id)) && !q.shown;
+                    });
+
+                    if (match) {
+                        match.shown = true;
                         this.triggerQuizPopup(match);
                     }
                 },
@@ -739,7 +751,7 @@
                         if (data.success) {
                             self.isAnswerCorrect = data.is_correct;
                             self.questionFeedback = data.feedback;
-                            self.answeredQuestionIds.push(self.activeQuestion.id);
+                            self.answeredQuestionIds.push(Number(self.activeQuestion.id));
                         } else {
                             alert(data.error || 'Gagal menyimpan jawaban. Silakan coba kembali.');
                         }

@@ -79,60 +79,26 @@ class StudentQuizController extends Controller
     {
         $quiz = $attempt->quiz()->with('questions')->first();
         $answers = $request->input('answers', []);
-        
-        $totalScore = 0;
-        $maxScore = $quiz->questions->sum('points');
-        
-        $pointsEarned = 0;
 
         foreach ($quiz->questions as $question) {
             $selected = $answers[$question->id] ?? null;
-            $isCorrect = false;
             $selectedOption = null;
             $textAnswer = null;
 
-            $type = $question->question_type;
-
-            if ($type === 'multiple_choice' || $type === 'true_false') {
+            if ($question->question_type === 'multiple_choice' || $question->question_type === 'true_false') {
                 $selectedOption = $selected;
-                $isCorrect = strtolower(trim($selectedOption)) === strtolower(trim($question->correct_answer));
-            } elseif ($type === 'short_answer') {
-                $textAnswer = $selected;
-                $isCorrect = strtolower(trim($textAnswer)) === strtolower(trim($question->correct_answer));
-                if (!$isCorrect && !empty($question->options['keywords'])) {
-                    $keywords = array_map('trim', explode(',', $question->options['keywords']));
-                    foreach ($keywords as $keyword) {
-                        if ($keyword !== '' && stripos($textAnswer, $keyword) !== false) {
-                            $isCorrect = true;
-                            break;
-                        }
-                    }
-                }
-            } elseif ($type === 'fill_blank') {
-                $textAnswer = $selected;
-                $isCorrect = strtolower(trim($textAnswer)) === strtolower(trim($question->correct_answer));
-            } elseif ($type === 'reflection') {
-                $textAnswer = $selected;
-                $isCorrect = !empty(trim($textAnswer));
-            } elseif ($type === 'debugging') {
-                $textAnswer = $selected;
-                $cleanInput = preg_replace('/\s+/', '', $textAnswer);
-                $cleanCorrect = preg_replace('/\s+/', '', $question->correct_answer);
-                $isCorrect = strtolower($cleanInput) === strtolower($cleanCorrect);
-            } elseif ($type === 'interactive_video') {
+            } elseif ($question->question_type === 'interactive_video') {
                 $videoQType = $question->options['video_question_type'] ?? 'multiple_choice';
                 if ($videoQType === 'multiple_choice' || $videoQType === 'true_false') {
                     $selectedOption = $selected;
-                    $isCorrect = strtolower(trim($selectedOption)) === strtolower(trim($question->correct_answer));
                 } else {
                     $textAnswer = $selected;
-                    $isCorrect = strtolower(trim($textAnswer)) === strtolower(trim($question->correct_answer));
                 }
+            } else {
+                $textAnswer = $selected;
             }
 
-            if ($isCorrect) {
-                $pointsEarned += $question->points;
-            }
+            $isCorrect = $question->isAnswerCorrect($selected);
 
             $attempt->answers()->updateOrCreate(
                 ['quiz_question_id' => $question->id],
@@ -143,14 +109,16 @@ class StudentQuizController extends Controller
                 ]
             );
         }
-        
-        // Scale score to 100
-        $finalScore = $maxScore > 0 ? round(($pointsEarned / $maxScore) * 100) : 0;
+
+        // Calculate and save the scaled final score using the centralized scoring engine
+        $attempt->load('answers.question');
+        $finalScore = $attempt->calculateScore();
 
         $attempt->update([
             'score' => $finalScore,
             'status' => 'completed',
         ]);
+
 
         // Award XP using XpService
         $user = auth()->user();

@@ -80,16 +80,19 @@ Route::middleware('auth')->group(function () {
         Route::get('my-courses', [\App\Http\Controllers\StudentCourseController::class, 'index'])->name('student.courses');
         Route::get('todos', [\App\Http\Controllers\StudentTodoController::class, 'index'])->name('student.todos');
         Route::post('assignments/{assignment}/submit', [\App\Http\Controllers\StudentAssignmentController::class, 'submit'])->name('student.assignments.submit');
-        // Siswa Quiz Routes
+        
+        // Siswa Attendance Routes
+        Route::get('attendances/{attendance}', [\App\Http\Controllers\StudentAttendanceController::class, 'show'])->name('student.attendances.show');
+        Route::post('attendances/{attendance}/submit', [\App\Http\Controllers\StudentAttendanceController::class, 'submit'])->name('student.attendances.submit');
+    });
+
+    // Quiz Routes accessible to both Siswa (doing) and Guru/Admin (previewing)
+    Route::middleware(['role:siswa|guru|teacher|admin'])->group(function () {
         Route::get('quizzes/{quiz}/start', [\App\Http\Controllers\StudentQuizController::class, 'show'])->name('student.quizzes.show');
         Route::post('quizzes/{quiz}/start', [\App\Http\Controllers\StudentQuizController::class, 'start'])->name('student.quizzes.start');
         Route::get('quiz-attempts/{attempt}', [\App\Http\Controllers\StudentQuizController::class, 'attempt'])->name('student.quizzes.attempt');
         Route::post('quiz-attempts/{attempt}/submit', [\App\Http\Controllers\StudentQuizController::class, 'submit'])->name('student.quizzes.submit');
         Route::get('quiz-attempts/{attempt}/result', [\App\Http\Controllers\StudentQuizController::class, 'result'])->name('student.quizzes.result');
-        
-        // Siswa Attendance Routes
-        Route::get('attendances/{attendance}', [\App\Http\Controllers\StudentAttendanceController::class, 'show'])->name('student.attendances.show');
-        Route::post('attendances/{attendance}/submit', [\App\Http\Controllers\StudentAttendanceController::class, 'submit'])->name('student.attendances.submit');
     });
 
     // Shared Course View Routes

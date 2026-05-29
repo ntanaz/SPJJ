@@ -612,22 +612,24 @@
                 return {
                     questions: {!! json_encode($video ? $videoQuizzes->map(fn($q) => [
                         'id'             => $q->id,
-                        'timestamp'      => $q->timestamp_seconds,
+                        'timestamp'      => (int)$q->timestamp_seconds,
                         'question_type'  => $q->question_type ?? 'multiple_choice',
                         'question'       => $q->question,
                         'options'        => $q->options->map(fn($o) => [
                             'id' => $o->id,
                             'option_text' => $o->option_text
                         ])->toArray(),
+                        'shown'          => false,
                     ]) : ($material ? $material->interactiveVideoQuestions->map(fn($q) => [
                         'id'             => $q->id,
-                        'timestamp'      => $q->timestamp,
+                        'timestamp'      => (int)$q->timestamp,
                         'question_type'  => $q->question_type ?? 'multiple_choice',
                         'question'       => $q->question,
                         'options'        => collect($q->options ?? [])->map(fn($text, $idx) => [
                             'id' => $text,
                             'option_text' => $text
                         ])->toArray(),
+                        'shown'          => false,
                     ]) : [])) !!},
                     showQuizModal:        false,
                     activeQuestion:       { question: '', options: [], question_type: 'multiple_choice' },
@@ -749,9 +751,21 @@
 
                     checkVideoTime(currentTime) {
                         if (this.showQuizModal) return;
-                        const t = Math.floor(currentTime);
-                        const match = this.questions.find(q => q.timestamp <= t && !this.answeredQuestionIds.includes(q.id));
+
+                        // Reset shown flag for questions ahead of current time in case student rewound
+                        this.questions.forEach(q => {
+                            if (currentTime < Number(q.timestamp)) {
+                                q.shown = false;
+                            }
+                        });
+
+                        const match = this.questions.find(q => {
+                            const qTime = Number(q.timestamp);
+                            return currentTime >= qTime && !this.answeredQuestionIds.includes(Number(q.id)) && !q.shown;
+                        });
+
                         if (match) {
+                            match.shown = true;
                             this.triggerQuizPopup(match);
                         }
                     },
@@ -813,7 +827,7 @@
                                 self.isAnswerCorrect = data.is_correct;
                                 self.questionFeedback = data.feedback;
                                 self.correctAnswerText = data.correct_answer || '';
-                                self.answeredQuestionIds.push(self.activeQuestion.id);
+                                self.answeredQuestionIds.push(Number(self.activeQuestion.id));
                             } else {
                                 alert(data.error || 'Gagal menyimpan jawaban. Silakan coba kembali.');
                             }

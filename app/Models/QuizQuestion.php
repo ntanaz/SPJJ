@@ -26,4 +26,51 @@ class QuizQuestion extends Model
     {
         return $this->belongsTo(Quiz::class);
     }
+
+    /**
+     * Determine if a student's answer for this question is correct.
+     * Centralized source of truth for answer evaluation.
+     */
+    public function isAnswerCorrect($answer): bool
+    {
+        if ($answer === null || $answer === '') {
+            return false;
+        }
+
+        $type = $this->question_type;
+        $correct = $this->correct_answer;
+
+        if ($type === 'multiple_choice' || $type === 'true_false') {
+            return strtolower(trim($answer)) === strtolower(trim($correct));
+        } elseif ($type === 'short_answer') {
+            $isCorrect = strtolower(trim($answer)) === strtolower(trim($correct));
+            if (!$isCorrect && !empty($this->options['keywords'])) {
+                $keywords = array_map('trim', explode(',', $this->options['keywords']));
+                foreach ($keywords as $keyword) {
+                    if ($keyword !== '' && stripos($answer, $keyword) !== false) {
+                        return true;
+                    }
+                }
+            }
+            return $isCorrect;
+        } elseif ($type === 'fill_blank') {
+            return strtolower(trim($answer)) === strtolower(trim($correct));
+        } elseif ($type === 'reflection') {
+            return !empty(trim($answer));
+        } elseif ($type === 'debugging') {
+            $cleanInput = preg_replace('/\s+/', '', $answer);
+            $cleanCorrect = preg_replace('/\s+/', '', $correct);
+            return strtolower($cleanInput) === strtolower($cleanCorrect);
+        } elseif ($type === 'interactive_video') {
+            $videoQType = $this->options['video_question_type'] ?? 'multiple_choice';
+            if ($videoQType === 'multiple_choice' || $videoQType === 'true_false') {
+                return strtolower(trim($answer)) === strtolower(trim($correct));
+            } else {
+                return strtolower(trim($answer)) === strtolower(trim($correct));
+            }
+        }
+
+        return false;
+    }
 }
+

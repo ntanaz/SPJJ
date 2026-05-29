@@ -41,6 +41,18 @@
                     </div>
                 </div>
 
+                @if(auth()->user()->hasRole(['guru', 'teacher', 'admin']))
+                    <div class="mb-8 p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl flex items-center gap-3 shadow-sm">
+                        <div class="h-10 w-10 bg-amber-100 rounded-xl flex items-center justify-center text-amber-600 flex-shrink-0">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-black text-amber-900">Mode Pratinjau Kuis (Guru / Admin)</h4>
+                            <p class="text-xs text-amber-700 font-medium">Anda dapat mengerjakan kuis ini sebagai uji coba pratinjau. Jawaban dan skor Anda tidak akan memengaruhi statistik siswa kelas.</p>
+                        </div>
+                    </div>
+                @endif
+
                 @if($attempt && $attempt->status === 'completed')
                     <div class="text-center p-8 bg-gray-50 border-2 border-dashed border-gray-200 rounded-3xl">
                         <p class="text-gray-500 mb-2 text-lg font-bold">Anda sudah menyelesaikan Kuis ini.</p>
@@ -53,7 +65,7 @@
                             @csrf
                             <button type="submit" class="inline-flex items-center justify-center gap-3 px-12 py-5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 active:scale-95 transition-all text-white font-black text-xl rounded-2xl shadow-xl shadow-indigo-500/30 w-full sm:w-auto">
                                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" /></svg>
-                                {{ $attempt && $attempt->status === 'in_progress' ? 'Lanjutkan Kuis' : 'Mulai Kerjakan Sekarang' }}
+                                {{ auth()->user()->hasRole(['guru', 'teacher', 'admin']) ? 'Mulai Pratinjau Kuis' : ($attempt && $attempt->status === 'in_progress' ? 'Lanjutkan Kuis' : 'Mulai Kerjakan Sekarang') }}
                             </button>
                         </form>
                     </div>

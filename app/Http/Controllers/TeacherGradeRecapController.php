@@ -19,7 +19,7 @@ class TeacherGradeRecapController extends Controller
     public function export(Request $request)
     {
         $classId = $request->course_class_id;
-        $class = CourseClass::with('course.assignments')->findOrFail($classId);
+        $class = CourseClass::with(['course.assignments', 'course.quizzes'])->findOrFail($classId);
         
         // Ensure teacher owns this class
         if ($class->teacher_id !== auth()->id()) {
@@ -33,6 +33,7 @@ class TeacherGradeRecapController extends Controller
             ->get();
 
         $assignments = $class->course->assignments;
+        $quizzes = $class->course->quizzes;
 
         $fileName = 'rekap_nilai_' . str_replace(' ', '_', $class->name) . '.csv';
         $headers = [
@@ -45,11 +46,14 @@ class TeacherGradeRecapController extends Controller
 
         $columns = array('Nama Siswa');
         foreach ($assignments as $assignment) {
-            $columns[] = $assignment->title;
+            $columns[] = 'Tugas: ' . $assignment->title;
+        }
+        foreach ($quizzes as $quiz) {
+            $columns[] = 'Kuis: ' . $quiz->title;
         }
         $columns[] = 'Rata-rata';
 
-        $callback = function() use($students, $assignments, $columns) {
+        $callback = function() use($students, $assignments, $quizzes, $columns) {
             $file = fopen('php://output', 'w');
             fputcsv($file, $columns);
 
@@ -63,7 +67,19 @@ class TeacherGradeRecapController extends Controller
                                             ->where('user_id', $student->id)
                                             ->first();
                     $score = $submission ? $submission->grade : 0;
-                    $row[$assignment->title] = $score;
+                    $row['Tugas: ' . $assignment->title] = $score;
+                    $totalScore += $score;
+                    $count++;
+                }
+
+                foreach ($quizzes as $quiz) {
+                    $attempt = \App\Models\QuizAttempt::where('quiz_id', $quiz->id)
+                                            ->where('user_id', $student->id)
+                                            ->where('status', 'completed')
+                                            ->latest()
+                                            ->first();
+                    $score = $attempt ? $attempt->score : 0;
+                    $row['Kuis: ' . $quiz->title] = $score;
                     $totalScore += $score;
                     $count++;
                 }
@@ -79,3 +95,4 @@ class TeacherGradeRecapController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 }
+

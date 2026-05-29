@@ -29,4 +29,34 @@ class QuizAttempt extends Model
     {
         return $this->hasMany(QuizAnswer::class);
     }
+
+    /**
+     * Compute attempt score based on correct answers and question points.
+     * Centralized source of truth for grading attempts.
+     */
+    public function calculateScore(): int
+    {
+        $quiz = $this->quiz()->with('questions')->first();
+        if (!$quiz) {
+            return 0;
+        }
+
+        $totalPossibleScore = $quiz->questions->sum('points');
+        if ($totalPossibleScore <= 0) {
+            return 0;
+        }
+
+        $totalScore = 0;
+        $this->loadMissing('answers.question');
+
+        foreach ($this->answers as $answer) {
+            if ($answer->is_correct) {
+                $points = $answer->question ? $answer->question->points : 0;
+                $totalScore += $points;
+            }
+        }
+
+        return round(($totalScore / $totalPossibleScore) * 100);
+    }
 }
+

@@ -28,7 +28,7 @@ class AssignmentController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'deadline' => 'required|date',
-            'attachment' => 'nullable|file|max:102400',
+            'attachment' => 'nullable|file|mimes:pdf,doc,docx|max:102400',
             'is_published' => 'boolean',
             'max_score' => 'required|integer|min:1'
         ]);
@@ -37,7 +37,11 @@ class AssignmentController extends Controller
         $data['is_published'] = $request->has('is_published');
         
         if ($request->hasFile('attachment')) {
-            $data['attachment'] = $request->file('attachment')->store('assignments', 'public');
+            $path = $request->file('attachment')->store('assignments', 'public');
+            $data['attachment'] = $path;
+            $data['attachment_path'] = $path;
+            $data['file_path'] = $path;
+            $data['lkpd_path'] = $path;
         }
 
         $assignment = Assignment::create($data);
@@ -54,6 +58,12 @@ class AssignmentController extends Controller
         return redirect()->route('assignments.index')->with('success', 'Tugas berhasil dibuat.');
     }
 
+    public function edit(Assignment $assignment)
+    {
+        $courses = Course::with('modules')->get();
+        return view('assignments.edit', compact('assignment', 'courses'));
+    }
+
     public function update(Request $request, Assignment $assignment)
     {
         $request->validate([
@@ -62,7 +72,7 @@ class AssignmentController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'deadline' => 'required|date',
-            'attachment' => 'nullable|file|max:102400',
+            'attachment' => 'nullable|file|mimes:pdf,doc,docx|max:102400',
             'max_score' => 'required|integer|min:1'
         ]);
 
@@ -73,10 +83,21 @@ class AssignmentController extends Controller
             if ($assignment->attachment && \Illuminate\Support\Facades\Storage::disk('public')->exists($assignment->attachment)) {
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($assignment->attachment);
             }
-            $data['attachment'] = $request->file('attachment')->store('assignments', 'public');
+            $path = $request->file('attachment')->store('assignments', 'public');
+            $data['attachment'] = $path;
+            $data['attachment_path'] = $path;
+            $data['file_path'] = $path;
+            $data['lkpd_path'] = $path;
         }
 
         $assignment->update($data);
+
+        // Sync the corresponding LearningActivity title/description and module if exists
+        \App\Models\LearningActivity::where('assignment_id', $assignment->id)->update([
+            'title' => 'Tugas: ' . $assignment->title,
+            'description' => $assignment->description,
+            'module_id' => $assignment->module_id,
+        ]);
 
         return redirect()->route('assignments.index')->with('success', 'Tugas berhasil diperbarui.');
     }

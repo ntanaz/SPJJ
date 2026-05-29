@@ -62,6 +62,9 @@ class QuizController extends Controller
                 'C' => $request->option_c,
                 'D' => $request->option_d,
             ];
+            if ($request->filled('option_e')) {
+                $options['E'] = $request->option_e;
+            }
             $correctAnswer = $request->correct_answer;
         } elseif ($type === 'true_false') {
             $options = [
@@ -149,7 +152,7 @@ class QuizController extends Controller
             'points' => $request->points ?? 10,
         ]);
 
-        return back()->with('success', 'Soal berhasil ditambahkan ke Kuis.');
+        return redirect()->route('quizzes.show', $quiz)->with('success', 'Soal berhasil ditambahkan ke Kuis.');
     }
 
     public function edit(Quiz $quiz)
@@ -195,6 +198,9 @@ class QuizController extends Controller
                     'C' => $request->option_c,
                     'D' => $request->option_d,
                 ];
+                if ($request->filled('option_e')) {
+                    $options['E'] = $request->option_e;
+                }
                 $correctAnswer = $request->correct_answer;
             } elseif ($type === 'true_false') {
                 $options = [
@@ -314,7 +320,8 @@ class QuizController extends Controller
             $rules['option_b'] = 'required|string';
             $rules['option_c'] = 'required|string';
             $rules['option_d'] = 'required|string';
-            $rules['correct_answer'] = 'required|string|in:A,B,C,D';
+            $rules['option_e'] = 'nullable|string';
+            $rules['correct_answer'] = 'required|string|in:A,B,C,D,E';
         } elseif ($type === 'true_false') {
             $rules['correct_answer'] = 'required|string|in:A,B';
         } elseif ($type === 'short_answer') {

@@ -57,6 +57,7 @@
                             <td class="px-6 py-4 text-right text-sm">
                                 <div class="flex items-center justify-end space-x-2">
                                     <a href="{{ route('teacher.assignments.submissions', $assignment->id) }}" class="px-3 py-1.5 bg-indigo-50 text-indigo-600 font-bold hover:bg-indigo-600 hover:text-white rounded-lg transition-colors shadow-sm">Cek Nilai</a>
+                                    <a href="{{ route('assignments.edit', $assignment) }}" class="px-3 py-1.5 bg-amber-50 text-amber-600 font-bold hover:bg-amber-600 hover:text-white rounded-lg transition-colors shadow-sm">Edit</a>
                                     <form action="{{ route('assignments.destroy', $assignment) }}" method="POST" class="inline-block" onsubmit="return confirm('Hapus tugas ini?');">
                                         @csrf
                                         @method('DELETE')

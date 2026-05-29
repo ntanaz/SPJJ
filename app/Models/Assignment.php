@@ -6,7 +6,19 @@ use Illuminate\Database\Eloquent\Model;
 
 class Assignment extends Model
 {
-    protected $fillable = ['course_id', 'module_id', 'title', 'description', 'deadline', 'attachment', 'is_published', 'max_score'];
+    protected $fillable = [
+        'course_id', 
+        'module_id', 
+        'title', 
+        'description', 
+        'deadline', 
+        'attachment', 
+        'attachment_path', 
+        'file_path', 
+        'lkpd_path', 
+        'is_published', 
+        'max_score'
+    ];
 
     // Cast the deadline to a carbon instance
     protected function casts(): array

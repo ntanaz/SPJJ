@@ -42,6 +42,42 @@
                     <div class="prose max-w-none text-gray-700 whitespace-pre-line border-t border-gray-100 pt-6">
                         {{ $assignment->description }}
                     </div>
+
+                    @if($assignment->attachment || $assignment->attachment_path || $assignment->file_path || $assignment->lkpd_path)
+                        @php
+                            $path = $assignment->attachment ?: ($assignment->attachment_path ?: ($assignment->file_path ?: $assignment->lkpd_path));
+                            $filename = basename($path);
+                            $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+                        @endphp
+                        <div class="mt-8 p-6 bg-gradient-to-br from-indigo-50/70 to-blue-50/70 border border-indigo-100 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm hover:shadow transition-all">
+                            <div class="flex items-center gap-3">
+                                <div class="h-12 w-12 bg-white rounded-xl text-indigo-650 flex items-center justify-center border border-indigo-100 shadow-sm">
+                                    @if(in_array($ext, ['doc', 'docx']))
+                                        <!-- Word icon -->
+                                        <svg class="w-7 h-7 text-blue-650" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                                    @elseif($ext == 'pdf')
+                                        <!-- PDF icon -->
+                                        <svg class="w-7 h-7 text-red-650" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                    @else
+                                        <!-- General file icon -->
+                                        <svg class="w-7 h-7 text-indigo-650" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                    @endif
+                                </div>
+                                <div>
+                                    <h5 class="text-sm font-black text-gray-800">Lembar Kerja Peserta Didik (LKPD)</h5>
+                                    <p class="text-xs text-gray-505 font-medium truncate max-w-[200px] sm:max-w-xs">{{ $filename }}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 w-full sm:w-auto">
+                                <a href="{{ asset('storage/' . $path) }}" target="_blank" class="w-1/2 sm:w-auto px-4 py-2 text-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs transition-colors shadow-sm whitespace-nowrap">
+                                    Buka File
+                                </a>
+                                <a href="{{ asset('storage/' . $path) }}" download class="w-1/2 sm:w-auto px-4 py-2 text-center bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl font-bold text-xs transition-colors shadow-sm whitespace-nowrap">
+                                    Download
+                                </a>
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
 
